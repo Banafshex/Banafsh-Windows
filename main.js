@@ -339,6 +339,16 @@ function hideTrayPopup() {
   if (trayPopup && !trayPopup.isDestroyed()) trayPopup.hide();
 }
 
+function showWindow() {
+  if (!win || win.isDestroyed()) {
+    createWindow();
+  }
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
 function createTray() {
   if (tray) return;
   const iconPath = path.join(__dirname, 'build', 'icon.png');

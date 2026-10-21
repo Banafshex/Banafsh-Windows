@@ -1,6 +1,6 @@
 {
   "name": "banafsh",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Banafsh for Windows",
   "main": "main.js",
   "author": "BANAFSHX",
@@ -37,6 +37,7 @@
       "requestedExecutionLevel": "asInvoker",
       "icon": "build/icon.ico",
       "artifactName": "Banafsh-${version}-portable.exe"
-    }
+    },
+    "artifactName": "Banafsh-${version}-portable.exe"
   }
 }
