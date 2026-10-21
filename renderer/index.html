@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+<title>Banafsh-sstp</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <section id="s-home" class="screen">
+    <div class="center">
+      <div id="status" class="muted big-text"></div>
+      <button id="big" class="big" aria-label="Connect"></button>
+    </div>
+    <div class="card">
+      <span id="cc" class="badge">--</span>
+      <div id="addr" class="addr"></div>
+      <button id="change" class="btn ghost" data-t="change"></button>
+    </div>
+    <button id="free" class="btn full" data-t="free"></button>
+  </section>
+
+  <section id="s-servers" class="screen" hidden>
+    <h1 data-t="stitle"></h1>
+    <p class="muted small" data-t="snote"></p>
+    <div id="list" class="list"></div>
+  </section>
+
+  <section id="s-bypass" class="screen" hidden>
+    <h1 data-t="btitle"></h1>
+    <p class="muted small" data-t="bnote"></p>
+    <div class="row">
+      <input id="site-in" aria-label="site" dir="ltr">
+      <button id="add" class="btn" data-t="add"></button>
+    </div>
+    <p class="muted tiny" data-t="sub"></p>
+    <div id="sites" class="list"></div>
+  </section>
+
+  <section id="s-settings" class="screen" hidden>
+    <h1 data-t="settings"></h1>
+    <div class="muted small" data-t="lang"></div>
+    <div class="row">
+      <button id="l-en" class="btn ghost grow">English</button>
+      <button id="l-fa" class="btn ghost grow">فارسی</button>
+    </div>
+    <h2 data-t="about"></h2>
+    <div class="card col">
+      <div>Banafsh-sstp 0.1.0</div>
+      <div class="muted small">ARASH-BANAFSHX</div>
+      <button id="tg" class="btn ghost" data-t="tg"></button>
+    </div>
+    <h2 data-t="log"></h2>
+    <pre id="log" dir="ltr"></pre>
+  </section>
+</main>
+<div id="toast" hidden></div>
+<nav>
+  <button data-tab="home" data-t="home"></button>
+  <button data-tab="servers" data-t="servers"></button>
+  <button data-tab="bypass" data-t="bypass"></button>
+  <button data-tab="settings" data-t="settings"></button>
+</nav>
+<script src="app.js"></script>
+</body>
+</html>

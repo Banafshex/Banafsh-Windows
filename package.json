@@ -1,0 +1,27 @@
+{
+  "name": "banafsh-windows",
+  "version": "0.1.0",
+  "description": "Banafsh-sstp for Windows",
+  "main": "main.js",
+  "author": "ARASH-BANAFSHX",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "com.banafshx.banafsh",
+    "productName": "Banafsh-sstp",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "renderer/**"],
+    "win": {
+      "target": [{ "target": "portable", "arch": ["x64"] }],
+      "requestedExecutionLevel": "requireAdministrator",
+      "artifactName": "Banafsh-sstp-${version}-portable.exe"
+    }
+  }
+}

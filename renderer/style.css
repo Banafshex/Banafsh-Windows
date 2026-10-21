@@ -1,0 +1,37 @@
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#17131f;color:#f1ecfa;font-family:Vazirmatn,Tahoma,"Segoe UI",sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column}
+[hidden]{display:none!important}
+main{flex:1;min-height:0;overflow-y:auto}
+.screen{padding:20px;display:flex;flex-direction:column;gap:14px;min-height:100%}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:8px 0 0}
+.muted{color:#b7accb}.small{font-size:13px}.tiny{font-size:12px;margin:0}
+p{margin:0}
+.center{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:30px;flex:1}
+.big-text{font-size:16px}
+.big{width:150px;height:150px;border-radius:50%;border:0;background:#7c3aed;color:#fff;font-size:22px;font-weight:700;font-family:inherit;margin:22px 0;box-shadow:0 0 0 12px #2a1f45,0 0 0 24px #211a35;cursor:pointer}
+.big.on{background:#4c2a9a}
+button{font-family:inherit;cursor:pointer}
+.btn{min-height:44px;padding:0 18px;border-radius:10px;font-size:15px;font-weight:600;border:0;background:#7c3aed;color:#fff}
+.btn.ghost{background:transparent;border:1px solid #6d5a9c}
+.btn.full{width:100%}.grow{flex:1}
+.card{background:#211a30;border:1px solid #2e2442;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.card.col{flex-direction:column;align-items:flex-start}
+.addr{flex:1;direction:ltr;text-align:left;font-size:14px;overflow:hidden;text-overflow:ellipsis}
+.badge{background:#33284d;color:#e4dafc;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;direction:ltr}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;min-height:44px;border-radius:10px;border:1px solid #6d5a9c;background:#0f0b16;color:#f1ecfa;padding:0 12px;font-size:15px;font-family:inherit;text-align:left}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:10px;background:#211a30;border:1px solid #2e2442;border-radius:12px;padding:8px 12px;min-height:56px}
+.item.bad{opacity:.6}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.dot.ok{background:#34d399}.dot.bad{background:#f87171}.dot.wait{background:#9ca3af}
+.info{flex:1;min-width:0}
+.host{direction:ltr;font-size:13px;display:inline-block}
+.del{min-width:44px;min-height:44px;background:none;border:0;color:#f0a1a1;font-size:20px}
+.site{flex:1;direction:ltr;text-align:left}
+pre{background:#0f0b16;border-radius:10px;padding:10px;font-size:11px;white-space:pre-wrap;max-height:160px;overflow:auto;margin:0}
+nav{display:flex;background:#1d1629;border-top:1px solid #2e2442}
+nav button{flex:1;background:none;border:0;border-top:3px solid transparent;color:#b7accb;font-size:14px;min-height:52px}
+nav button.active{border-top-color:#a78bfa;color:#f1ecfa;font-weight:600}
+#toast{position:fixed;bottom:64px;left:20px;right:20px;background:#33284d;color:#f1ecfa;padding:10px 14px;border-radius:10px;font-size:13px;text-align:center}
