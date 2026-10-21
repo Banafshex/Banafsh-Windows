@@ -1,20 +1,44 @@
 const T = {
-  en: { home:'Home', servers:'Servers', bypass:'No VPN', settings:'Settings', off:'Not connected', busy:'Connecting...', on:'Connected',
+  en: {
+    home:'Home', servers:'Servers', bypass:'No VPN', settings:'Settings', off:'Not connected', busy:'Connecting...', on:'Connected',
+    reconnecting:'Reconnecting...', switching:'Trying another server...',
     connect:'Connect', disconnect:'Disconnect', change:'Change', free:'Pick a free server', none:'No server selected',
-    stitle:'Free servers', snote:'Auto-tested; broken ones go last', ok:'Online', bad:'Failed', wait:'Testing',
+    stitle:'Free servers', snote:'Auto-tested when you open this list; broken ones go last', ok:'Online', bad:'Failed', wait:'Testing', testall:'Test all',
     btitle:'Sites without VPN', bnote:'These sites open directly, without VPN, while connected', add:'Add', ph:'e.g. site.ir',
-    sub:'Common subdomains (www, pay, api...) are added automatically', lang:'Language', about:'About', log:'Log',
-    inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list' },
-  fa: { home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
-    connect:'Connect', disconnect:'Disconnect', change:'تغییر', free:'انتخاب سرور رایگان', none:'سروری انتخاب نشده',
-    stitle:'سرورهای رایگان', snote:'تست خودکار؛ خراب‌ها آخر لیست‌ان', ok:'آنلاین', bad:'خراب', wait:'در حال تست',
+    sub:'Common subdomains (www, pay, api...) are added automatically', lang:'Language', about:'About', log:'Log', advanced:'Advanced',
+    reconnectTitle:'Connection', autoReconnect:'Auto reconnect', autoReconnectNote:'Reconnect automatically if the VPN connection drops',
+    startupReconnect:'Reconnect on startup', startupReconnectNote:'Restore the last connection when Banafsh starts',
+    reconnectAttempts:'Reconnect attempts', reconnectAttemptsNote:'Attempts on the same server before trying another healthy server',
+    reconnectDelay:'Reconnect delay', seconds:'seconds', tries:'tries',
+    closeTitle:'When closing the window', closeAsk:'Ask me', closeKeep:'Keep connection and minimize to tray', closeQuit:'Disconnect and quit',
+    trayNote:'Banafsh can stay active next to the clock even when the window is closed.',
+    inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list',
+    refreshing:'Testing servers...', saved:'Saved', reconnectAttempt:'Attempt', of:'of', connectedTo:'Connected to',
+    connectionLost:'Connection lost. Reconnecting...', failover:'Current server is not responding. Trying another healthy server...',
+    reconnectFailed:'Automatic reconnect failed.', version:'Banafsh 0.1.3'
+  },
+  fa: {
+    home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
+    reconnecting:'در حال اتصال مجدد...', switching:'در حال امتحان کردن سرور دیگر...',
+    connect:'اتصال', disconnect:'قطع اتصال', change:'تغییر', free:'انتخاب سرور رایگان', none:'سروری انتخاب نشده',
+    stitle:'سرورهای رایگان', snote:'با باز کردن این لیست خودکار تست می‌شوند؛ خراب‌ها آخر لیست می‌روند', ok:'سالم', bad:'خراب', wait:'در حال تست', testall:'تست همه',
     btitle:'سایت‌های بدون VPN', bnote:'این سایت‌ها موقع اتصال مستقیم و بدون VPN باز می‌شن', add:'افزودن', ph:'مثلا site.ir',
-    sub:'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شن', lang:'زبان', about:'درباره', log:'گزارش (Log)',
-    inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد' }
+    sub:'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شن', lang:'زبان', about:'درباره', log:'گزارش (Log)', advanced:'پیشرفته',
+    reconnectTitle:'اتصال', autoReconnect:'اتصال مجدد خودکار', autoReconnectNote:'اگر اتصال VPN قطع شد، Banafsh خودکار دوباره وصل شود',
+    startupReconnect:'اتصال مجدد هنگام شروع', startupReconnectNote:'با اجرای Banafsh آخرین اتصال را برگردان',
+    reconnectAttempts:'تعداد تلاش اتصال مجدد', reconnectAttemptsNote:'تلاش روی همان سرور قبل از رفتن سراغ یک سرور سالم دیگر',
+    reconnectDelay:'فاصله اتصال مجدد', seconds:'ثانیه', tries:'تلاش',
+    closeTitle:'رفتار هنگام بستن پنجره', closeAsk:'از من بپرس', closeKeep:'اتصال بماند و برنامه کنار ساعت برود', closeQuit:'قطع اتصال و خروج',
+    trayNote:'حتی وقتی پنجره بسته است، Banafsh می‌تواند کنار ساعت فعال بماند.',
+    inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد',
+    refreshing:'در حال تست سرورها...', saved:'ذخیره شد', reconnectAttempt:'تلاش', of:'از', connectedTo:'متصل به',
+    connectionLost:'اتصال قطع شد؛ در حال اتصال مجدد...', failover:'سرور فعلی پاسخ نمی‌دهد؛ در حال امتحان کردن یک سرور سالم دیگر...',
+    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', version:'Banafsh 0.1.3'
+  }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
-let S = { lang: 'fa', sites: null, last: null };
-let servers = [], connected = false, busy = false;
+let S = { lang: 'fa', sites: null, last: null, autoReconnect: true, reconnectOnStart: false, reconnectDelay: 10, reconnectAttempts: 3, closeBehavior: 'ask' };
+let servers = [], connected = false, busy = false, testing = false, serversLoaded = false, serversTested = false;
 const logs = [];
 const $ = (id) => document.getElementById(id);
 const t = (k) => T[S.lang][k] || k;
@@ -22,6 +46,7 @@ const el = (tag, o = {}, ...kids) => {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(o)) {
     if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
     else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
     else e.setAttribute(k, v);
   }
@@ -35,6 +60,16 @@ function normSite(v) {
   v = v.trim().toLowerCase().replace(/^[a-z]+:\/\//, '').replace(/^\*\./, '').replace(/^www\./, '').split(/[\/?#:]/)[0];
   return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(v) ? v : null;
 }
+function fmtSpeed(v) {
+  if (!Number.isFinite(Number(v)) || Number(v) <= 0) return '--';
+  const n = Number(v);
+  return `${n >= 100 ? Math.round(n) : n.toFixed(1).replace(/\.0$/, '')} Mbps`;
+}
+function sortServers(arr) {
+  const order = { ok: 0, wait: 1, bad: 2 };
+  return [...arr].sort((a, b) => order[a.state] - order[b.state] || Number(b.speedMbps || 0) - Number(a.speedMbps || 0) || Number(a.ms > 0 ? a.ms : Infinity) - Number(b.ms > 0 ? b.ms : Infinity) || Number(a.ping || Infinity) - Number(b.ping || Infinity));
+}
+function setBusy(v) { busy = v; renderHome(); renderServers(); }
 
 function renderHome() {
   $('status').textContent = busy ? t('busy') : connected ? t('on') : t('off');
@@ -46,67 +81,94 @@ function renderHome() {
   $('addr').textContent = S.last ? S.last.host : t('none');
 }
 function renderServers() {
-  const order = { ok: 0, wait: 1, bad: 2 };
-  const arr = [...servers].sort((a, b) => order[a.state] - order[b.state] || (a.ms - b.ms));
+  const arr = sortServers(servers);
   $('list').replaceChildren(...arr.map((s) => el('div', { class: 'item ' + s.state },
     el('span', { class: 'dot ' + s.state }),
     el('div', { class: 'info' },
       el('div', {}, el('span', { class: 'badge' }, s.cc || '--'), ' ', el('span', { class: 'host' }, s.host)),
-      el('div', { class: 'muted tiny' }, t(s.state) + (s.state === 'ok' ? ' · ' + s.ms + ' ms' : ''))),
-    s.state === 'ok' ? el('button', { class: 'btn', onclick: () => { show('home'); go(s); } }, t('connect')) : '')));
+      el('div', { class: 'stats' },
+        el('span', { class: 'muted tiny' }, t(s.state) + (s.state === 'ok' ? ' · ' + s.ms + ' ms' : '')),
+        s.speedMbps > 0 ? el('span', { class: 'speed' }, fmtSpeed(s.speedMbps)) : '',
+        s.port && s.port !== 443 ? el('span', { class: 'muted tiny' }, 'TCP ' + s.port) : ''
+      )),
+    s.state === 'ok' ? el('button', { class: 'btn small-btn', onclick: () => { show('home'); go(s); } }, t('connect')) : '')));
+  $('test-all').textContent = testing ? t('refreshing') : t('testall');
+  $('test-all').disabled = testing || busy;
 }
 function renderSites() {
   $('sites').replaceChildren(...S.sites.map((s) => el('div', { class: 'item' },
     el('span', { class: 'site' }, s),
     el('button', { class: 'del', 'aria-label': 'x ' + s, onclick: () => { S.sites = S.sites.filter((x) => x !== s); save(); renderSites(); if (connected) toast(t('rec')); } }, '×'))));
 }
+function renderSettings() {
+  $('auto-reconnect').checked = S.autoReconnect !== false;
+  $('startup-reconnect').checked = !!S.reconnectOnStart;
+  $('reconnect-delay').value = String(S.reconnectDelay || 10);
+  $('reconnect-attempts').value = String(S.reconnectAttempts || 3);
+  document.querySelectorAll('input[name="close-behavior"]').forEach((r) => { r.checked = r.value === (S.closeBehavior || 'ask'); });
+}
 function applyLang() {
   document.documentElement.lang = S.lang;
   document.documentElement.dir = S.lang === 'fa' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-t]').forEach((e) => (e.textContent = t(e.dataset.t)));
   $('site-in').placeholder = t('ph');
-  renderHome(); renderServers(); renderSites();
+  renderHome(); renderServers(); renderSites(); renderSettings();
 }
-function show(name) {
+async function show(name) {
   document.querySelectorAll('.screen').forEach((e) => (e.hidden = e.id !== 's-' + name));
   document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+  if (name === 'servers' && !serversLoaded) await loadServers();
+  if (name === 'servers' && serversLoaded && !serversTested && !testing) await testAll();
 }
 
 async function loadServers() {
-  try { servers = (await window.api.servers()).map((s) => ({ ...s, state: 'wait', ms: 0 })); }
+  try { servers = (await window.api.servers()).map((s) => ({ ...s, state: 'wait', ms: 0 })); serversLoaded = true; serversTested = false; }
   catch (e) { servers = []; toast(t('ldfail')); log(String(e)); renderServers(); return; }
+  renderServers();
+}
+async function testAll() {
+  if (testing || !servers.length) return;
+  testing = true; serversTested = false;
+  servers.forEach((s) => { s.state = 'wait'; s.ms = 0; });
   renderServers();
   let i = 0;
   const worker = async () => {
     while (i < servers.length) {
-      const s = servers[i++]; const ms = await window.api.test(s.host);
+      const s = servers[i++];
+      const ms = await window.api.test(s.host, s.port);
       s.ms = ms; s.state = ms > 0 ? 'ok' : 'bad'; renderServers();
     }
   };
   await Promise.all(Array.from({ length: 8 }, worker));
+  testing = false; serversTested = true; renderServers();
+  await window.api.health(servers.map((s) => ({ host: s.host, ms: s.ms })));
 }
 async function best() {
-  if (!servers.length || servers.some((s) => s.state === 'wait')) await loadServers();
-  return servers.filter((s) => s.state === 'ok').sort((a, b) => a.ms - b.ms)[0];
+  if (!servers.length) await loadServers();
+  if (servers.some((s) => s.state === 'wait') || !serversTested) await testAll();
+  return sortServers(servers.filter((s) => s.state === 'ok'))[0];
 }
 async function go(srv) {
   if (busy) return;
-  busy = true; renderHome();
+  setBusy(true);
   try {
     if (!srv) { srv = await best(); if (!srv) { toast(t('nook')); return; } }
-    S.last = srv; save(); log('connect ' + srv.host);
-    const r = await window.api.connect({ host: srv.host, user: srv.user, pass: srv.pass, sites: S.sites });
+    S.last = { ...srv }; save(); log('connect ' + srv.host + ':' + (srv.port || 443));
+    const r = await window.api.connect({ host: srv.host, port: srv.port || 443, user: srv.user, pass: srv.pass, sites: S.sites });
     connected = !!r.ok;
-    if (r.ok) log('connected; direct IPs: ' + r.bypassed); else { toast(t('fail')); log(r.error); }
-  } finally { busy = false; renderHome(); }
+    if (r.ok) log('connected; direct IPs: ' + r.bypassed); else { toast(t('fail')); log(r.error || 'unknown'); }
+  } finally { setBusy(false); }
 }
+
 $('big').addEventListener('click', async () => {
   if (busy) return;
-  if (connected) { busy = true; renderHome(); await window.api.disconnect(); connected = false; busy = false; log('disconnected'); renderHome(); }
-  else go(S.last);
+  if (connected) {
+    setBusy(true); await window.api.disconnect(); connected = false; setBusy(false); log('disconnected');
+  } else go(S.last);
 });
-$('free').addEventListener('click', async () => { if (busy) return; busy = true; renderHome(); const s = await best(); busy = false; go(s); });
+$('free').addEventListener('click', async () => { if (busy) return; const s = await best(); if (s) go(s); else toast(t('nook')); });
 $('change').addEventListener('click', () => show('servers'));
+$('test-all').addEventListener('click', testAll);
 $('add').addEventListener('click', () => {
   const v = normSite($('site-in').value);
   if (!v) return toast(t('inv'));
@@ -116,14 +178,47 @@ $('add').addEventListener('click', () => {
 $('site-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('add').click(); });
 $('l-en').addEventListener('click', () => { S.lang = 'en'; save(); applyLang(); });
 $('l-fa').addEventListener('click', () => { S.lang = 'fa'; save(); applyLang(); });
+$('auto-reconnect').addEventListener('change', (e) => { S.autoReconnect = e.target.checked; save(); toast(t('saved')); });
+$('startup-reconnect').addEventListener('change', (e) => { S.reconnectOnStart = e.target.checked; save(); toast(t('saved')); });
+$('reconnect-delay').addEventListener('change', (e) => { const n = Math.max(5, Math.min(300, Number(e.target.value) || 10)); S.reconnectDelay = n; e.target.value = String(n); save(); toast(t('saved')); });
+$('reconnect-attempts').addEventListener('change', (e) => { const n = Math.max(1, Math.min(10, Number(e.target.value) || 3)); S.reconnectAttempts = n; e.target.value = String(n); save(); toast(t('saved')); });
+document.querySelectorAll('input[name="close-behavior"]').forEach((r) => r.addEventListener('change', (e) => { S.closeBehavior = e.target.value; save(); toast(t('saved')); }));
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
+
+window.api.onEvent((ev) => {
+  if (!ev) return;
+  if (ev.type === 'connected' || ev.type === 'reconnected') {
+    connected = true; busy = false; renderHome();
+    if (ev.type === 'reconnected') toast(t('connectedTo') + ' ' + ev.host);
+    log('connected: ' + ev.host);
+  } else if (ev.type === 'connectionLost') {
+    connected = false; busy = true; renderHome(); toast(t('connectionLost')); log('connection lost');
+  } else if (ev.type === 'reconnecting') {
+    connected = false; busy = true; renderHome();
+    $('status').textContent = `${t('reconnecting')} ${t('reconnectAttempt')} ${ev.attempt} ${t('of')} ${ev.attempts}`;
+  } else if (ev.type === 'switchingServer') {
+    connected = false; busy = true; renderHome(); $('status').textContent = t('switching'); toast(t('failover'));
+  } else if (ev.type === 'reconnectFailed') {
+    connected = false; busy = false; renderHome(); toast(t('reconnectFailed')); log('reconnect failed');
+  } else if (ev.type === 'status') {
+    connected = !!ev.connected; busy = false; renderHome();
+  } else if (ev.type === 'connectionError') {
+    connected = false; busy = false; renderHome(); toast(t('fail')); log(ev.error || 'connection error');
+  }
+});
 
 (async () => {
   const saved = (await window.api.get()) || {};
   S = { ...S, ...saved };
   if (!Array.isArray(S.sites)) { S.sites = [...DEFAULT_SITES]; save(); }
+  if (!S.reconnectAttempts) { S.reconnectAttempts = 3; save(); }
+  if (!S.reconnectDelay) { S.reconnectDelay = 10; save(); }
+  if (!S.closeBehavior) { S.closeBehavior = 'ask'; save(); }
   show('home'); applyLang();
   connected = await window.api.status(); renderHome();
-  loadServers();
-  setInterval(async () => { if (busy) return; const c = await window.api.status(); if (c !== connected) { connected = c; renderHome(); } }, 5000);
+  setInterval(async () => {
+    if (busy) return;
+    try { const c = await window.api.status(); if (c !== connected) { connected = c; renderHome(); } }
+    catch (e) { log(String(e)); }
+  }, 5000);
 })();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'">
-<title>Banafsh-sstp</title>
+<title>Banafsh</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,8 +25,13 @@
   </section>
 
   <section id="s-servers" class="screen" hidden>
-    <h1 data-t="stitle"></h1>
-    <p class="muted small" data-t="snote"></p>
+    <div class="section-head">
+      <div>
+        <h1 data-t="stitle"></h1>
+        <p class="muted small" data-t="snote"></p>
+      </div>
+      <button id="test-all" class="btn ghost refresh-btn" data-t="testall"></button>
+    </div>
     <div id="list" class="list"></div>
   </section>
 
@@ -43,18 +48,68 @@
 
   <section id="s-settings" class="screen" hidden>
     <h1 data-t="settings"></h1>
-    <div class="muted small" data-t="lang"></div>
+
+    <h2 data-t="reconnectTitle"></h2>
+    <div class="setting-list">
+      <label class="setting">
+        <span class="setting-text"><strong data-t="autoReconnect"></strong><small data-t="autoReconnectNote"></small></span>
+        <input id="auto-reconnect" type="checkbox">
+        <span class="switch"></span>
+      </label>
+      <label class="setting">
+        <span class="setting-text"><strong data-t="startupReconnect"></strong><small data-t="startupReconnectNote"></small></span>
+        <input id="startup-reconnect" type="checkbox">
+        <span class="switch"></span>
+      </label>
+      <label class="setting select-setting">
+        <span class="setting-text"><strong data-t="reconnectAttempts"></strong><small data-t="reconnectAttemptsNote"></small></span>
+        <select id="reconnect-attempts" dir="ltr">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option>
+        </select>
+        <span class="muted small" data-t="tries"></span>
+      </label>
+      <label class="setting select-setting">
+        <span class="setting-text"><strong data-t="reconnectDelay"></strong></span>
+        <select id="reconnect-delay" dir="ltr">
+          <option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="30">30</option><option value="60">60</option>
+        </select>
+        <span class="muted small" data-t="seconds"></span>
+      </label>
+    </div>
+
+    <h2 data-t="closeTitle"></h2>
+    <div class="setting-list radio-list">
+      <label class="setting radio-setting"><span class="setting-text"><strong data-t="closeAsk"></strong></span><input type="radio" name="close-behavior" value="ask"><span class="radio"></span></label>
+      <label class="setting radio-setting"><span class="setting-text"><strong data-t="closeKeep"></strong></span><input type="radio" name="close-behavior" value="keep"><span class="radio"></span></label>
+      <label class="setting radio-setting"><span class="setting-text"><strong data-t="closeQuit"></strong></span><input type="radio" name="close-behavior" value="quit"><span class="radio"></span></label>
+    </div>
+
+    <div class="tray-card">
+      <div class="tray-icon">↗</div>
+      <div>
+        <strong>Banafsh Tray</strong>
+        <p class="muted small" data-t="trayNote"></p>
+      </div>
+    </div>
+
+    <h2 data-t="lang"></h2>
     <div class="row">
       <button id="l-en" class="btn ghost grow">English</button>
       <button id="l-fa" class="btn ghost grow">فارسی</button>
     </div>
+
+    <details class="advanced">
+      <summary data-t="advanced"></summary>
+      <div class="advanced-body">
+        <pre id="log" dir="ltr"></pre>
+      </div>
+    </details>
+
     <h2 data-t="about"></h2>
     <div class="card col">
-      <div>Banafsh-sstp 0.1.1</div>
+      <div data-t="version"></div>
       <div class="muted small">BANAFSHX</div>
     </div>
-    <h2 data-t="log"></h2>
-    <pre id="log" dir="ltr"></pre>
   </section>
 </main>
 <div id="toast" hidden></div>
