@@ -15,7 +15,7 @@ const T = {
     inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list',
     refreshing:'Testing servers...', saved:'Saved', reconnectAttempt:'Attempt', of:'of', connectedTo:'Connected to',
     connectionLost:'Connection lost. Reconnecting...', failover:'Current server is not responding. Trying another healthy server...',
-    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.10'
+    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.11'
   },
   fa: {
     home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
@@ -33,7 +33,7 @@ const T = {
     inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد',
     refreshing:'در حال تست سرورها...', saved:'ذخیره شد', reconnectAttempt:'تلاش', of:'از', connectedTo:'متصل به',
     connectionLost:'اتصال قطع شد؛ در حال اتصال مجدد...', failover:'سرور فعلی پاسخ نمی‌دهد؛ در حال امتحان کردن یک سرور سالم دیگر...',
-    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.10'
+    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.11'
   }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
@@ -67,7 +67,9 @@ function fmtSpeed(v) {
 }
 function sortServers(arr) {
   const order = { ok: 0, wait: 1, bad: 2 };
-  const pingOf = (s) => Number(s.ping) > 0 ? Number(s.ping) : Number(s.ms) > 0 ? Number(s.ms) : Infinity;
+  // After a test, the measured TCP latency is the primary ranking signal.
+  // Before testing, fall back to the latency advertised in servers.json.
+  const pingOf = (s) => Number(s.ms) > 0 ? Number(s.ms) : Number(s.ping) > 0 ? Number(s.ping) : Infinity;
   return [...arr].sort((a, b) =>
     order[a.state] - order[b.state] ||
     pingOf(a) - pingOf(b) ||
@@ -261,6 +263,8 @@ window.api.onEvent((ev) => {
     connected = false; busy = true; busyMode = 'reconnectingButton'; renderHome(); $('status').textContent = t('switching'); toast(t('failover'));
   } else if (ev.type === 'reconnectFailed') {
     connected = false; busy = false; renderHome(); toast(t('reconnectFailed')); log('reconnect failed');
+  } else if (ev.type === 'settings') {
+    if (ev.settings) { S = { ...S, ...ev.settings }; renderSettings(); renderHome(); }
   } else if (ev.type === 'status') {
     connected = !!ev.connected; busy = false; renderHome();
   } else if (ev.type === 'connectionError') {

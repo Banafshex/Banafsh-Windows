@@ -2,6 +2,12 @@
 
 Windows desktop client for Banafsh.
 
+## 0.1.11 changes
+- Settings changed by the app itself (failover server, remembered close choice) are pushed to the window, so a later save can no longer overwrite them.
+- Tray Connect/Disconnect now checks the live connection state instead of a cached one.
+- Fixed the elevated relaunch race: the single-instance lock is released before the Administrator copy starts, and the non-admin copy exits without touching the VPN.
+- Tray icon is now 32 px; removed the unused tray popup files.
+
 ## 0.1.10 changes
 - Replaced the native Windows title bar with a themed Banafsh title bar and custom minimize/close controls.
 - Startup progress now remains visible briefly instead of flashing away immediately on fast systems.

@@ -47,6 +47,13 @@ function loadSettings() {
   try { return { ...DEFAULTS, ...JSON.parse(fs.readFileSync(SF, 'utf8')) }; }
   catch { return { ...DEFAULTS }; }
 }
+// Used when the main process changes settings itself (failover server, remembered close choice).
+// The renderer is told, so its in-memory copy can never overwrite the new value later.
+function patchSettings(p) {
+  const merged = { ...loadSettings(), ...p };
+  saveSettings(merged);
+  emitEvent('settings', { settings: merged });
+}
 function saveSettings(s) {
   try {
     const current = loadSettings();
@@ -140,7 +147,7 @@ async function isConnected() {
   // active and avoids spawning PowerShell every polling cycle. The connection
   // name is fixed and not localized, so this remains reliable on localized Windows.
   const r = await run('rasdial', []);
-  return r.code === 0 && new RegExp('(^|\r?\n)\s*' + CONN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\s|$)', 'i').test(r.out);
+  return r.code === 0 && new RegExp('(^|\\r?\\n)\\s*' + CONN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s|$)', 'i').test(r.out);
 }
 
 function startupProgress(percent, text = '') {
@@ -174,9 +181,9 @@ function sortServers(arr) {
   const stateRank = (s) => s === 'ok' ? 0 : s === 'wait' ? 1 : 2;
   return [...arr].sort((a, b) =>
     stateRank(a.state) - stateRank(b.state) ||
-    Number(b.speedMbps || 0) - Number(a.speedMbps || 0) ||
     Number(a.ms > 0 ? a.ms : Infinity) - Number(b.ms > 0 ? b.ms : Infinity) ||
-    Number(a.ping || Infinity) - Number(b.ping || Infinity)
+    Number(a.ping > 0 ? a.ping : Infinity) - Number(b.ping > 0 ? b.ping : Infinity) ||
+    Number(b.speedMbps || 0) - Number(a.speedMbps || 0)
   );
 }
 
@@ -255,14 +262,14 @@ async function findFailoverServer(excluded) {
   const cached = candidates
     .map((s) => ({ s, h: healthCache.get(s.host) }))
     .filter((x) => x.h && x.h.ok && Date.now() - x.h.at < 10 * 60 * 1000)
-    .sort((a, b) => Number(b.s.speedMbps || 0) - Number(a.s.speedMbps || 0) || Number(a.h.ms) - Number(b.h.ms));
+    .sort((a, b) => Number(a.h.ms) - Number(b.h.ms) || Number(a.s.ping > 0 ? a.s.ping : Infinity) - Number(b.s.ping > 0 ? b.s.ping : Infinity) || Number(b.s.speedMbps || 0) - Number(a.s.speedMbps || 0));
   if (cached.length) return cached[0].s;
 
   const pool = candidates.slice(0, 12);
   const tested = await Promise.all(pool.map(async (s) => ({ s, ms: await tcp(s.host, s.port || 443) })));
   tested.forEach((x) => rememberHealth(x.s.host, x.ms));
   return tested.filter((x) => x.ms > 0)
-    .sort((a, b) => Number(b.s.speedMbps || 0) - Number(a.s.speedMbps || 0) || a.ms - b.ms)[0]?.s || null;
+    .sort((a, b) => a.ms - b.ms || Number(a.s.ping > 0 ? a.s.ping : Infinity) - Number(b.s.ping > 0 ? b.s.ping : Infinity) || Number(b.s.speedMbps || 0) - Number(a.s.speedMbps || 0))[0]?.s || null;
 }
 
 async function runReconnect(reason = '') {
@@ -290,7 +297,7 @@ async function runReconnect(reason = '') {
         const r = await connectSaved(current);
         if (r.ok) {
           const settings = loadSettings();
-          saveSettings({ ...settings, last: { ...current } });
+          patchSettings({ last: { ...current } });
           emitEvent('reconnected', { host: current.host, switched });
           logMain('reconnected: ' + current.host);
           return;
@@ -340,8 +347,8 @@ async function refreshTrayMenu() {
     { label: c ? l.connected : l.offline, enabled: false },
     { type: 'separator' },
     { label: reconnecting ? l.connecting : (c ? l.disconnect : l.connect), enabled: !reconnecting, click: async () => {
-      if (reconnecting) return;
-      if (c) {
+      if (reconnecting || intentionalDisconnect) return;
+      if (await isConnected()) {
         manualDisconnect = true;
         cancelReconnect();
         await disconnectAll();
@@ -374,7 +381,7 @@ function createTray() {
   if (tray) return;
   const iconPath = path.join(__dirname, 'build', 'icon.png');
   let icon = nativeImage.createFromPath(iconPath);
-  if (!icon.isEmpty()) icon = icon.resize({ width: 16, height: 16 });
+  if (!icon.isEmpty()) icon = icon.resize({ width: 32, height: 32 });
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.on('click', showWindow);
   tray.on('double-click', showWindow);
@@ -385,7 +392,7 @@ function createTray() {
 ipcMain.handle('window:close-choice', async (_, choice, remember) => {
   if (!win || win.isDestroyed()) return false;
   const s = loadSettings();
-  if (remember && (choice === 'keep' || choice === 'quit')) saveSettings({ ...s, closeBehavior: choice });
+  if (remember && (choice === 'keep' || choice === 'quit')) patchSettings({ closeBehavior: choice });
   if (choice === 'keep') {
     closePrompt = false;
     win.hide();
@@ -529,9 +536,13 @@ app.whenReady().then(async () => {
     const admin = await isAdmin();
     if (!admin) {
       startupProgress(55, 'درخواست دسترسی Administrator...');
+      // Release the single-instance lock first, otherwise the elevated copy can start while this one
+      // still holds it and silently quit. This copy must not touch the VPN, so exit without cleanup.
+      app.releaseSingleInstanceLock();
       const r = await relaunchAsAdmin();
       if (r.code) dialog.showErrorBox('Banafsh', 'برای کار کردن برنامه اجازه‌ی Administrator لازمه.\nThis app needs Administrator permission.');
-      app.quit(); return;
+      if (tray) { try { tray.destroy(); } catch {} }
+      app.exit(0); return;
     }
 
     startupProgress(48, 'در حال آماده‌سازی اتصال...');
