@@ -128,10 +128,28 @@
     <div class="card col">
       <div data-t="version"></div>
       <div class="muted small">BANAFSHX</div>
+      <button id="open-guide" class="btn ghost" data-t="guide"></button>
     </div>
   </section>
 </main>
 <div id="toast" hidden></div>
+<div id="welcome-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <section class="modal-card welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <button id="welcome-x" class="modal-x" type="button" aria-label="Close">×</button>
+    <img src="../build/icon.png" alt="" class="welcome-icon">
+    <h2 id="welcome-title" data-t="welcomeTitle"></h2>
+    <p class="modal-message" data-t="welcomeIntro"></p>
+    <h3 data-t="welcomeHow"></h3>
+    <ol class="guide-list">
+      <li data-t="w1"></li><li data-t="w2"></li><li data-t="w3"></li><li data-t="w4"></li><li data-t="w5"></li>
+    </ol>
+    <h3 data-t="welcomeFeatures"></h3>
+    <p class="modal-detail" data-t="welcomeFeaturesText"></p>
+    <div class="note"><strong data-t="bankTitle"></strong><p data-t="bankText"></p><p data-t="logText"></p></div>
+    <div class="modal-actions"><button id="welcome-start" class="btn full" data-t="welcomeStart"></button></div>
+  </section>
+</div>
 <div id="close-modal" class="modal" hidden aria-hidden="true">
   <div class="modal-backdrop"></div>
   <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">

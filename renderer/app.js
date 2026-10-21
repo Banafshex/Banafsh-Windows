@@ -15,7 +15,16 @@ const T = {
     inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list',
     refreshing:'Testing servers...', saved:'Saved', reconnectAttempt:'Attempt', of:'of', connectedTo:'Connected to',
     connectionLost:'Connection lost. Reconnecting...', failover:'Current server is not responding. Trying another healthy server...',
-    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.11'
+    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', welcomeTitle:"Welcome to Banafsh", welcomeIntro:"A simple, free VPN that finds the best working server and connects you, with no complicated setup.", welcomeHow:"How to use it",
+    w1:"Press Connect. If you haven't picked a server, Banafsh finds the best working one for you.",
+    w2:"Want to choose yourself? Open the “Servers” tab. Servers are tested and each one shows its ping and speed (Mbps). Use “Test all” to test them again.",
+    w3:"“No VPN” tab: add the sites you want to open directly, without VPN. Just type the address; common subdomains are added automatically. A few Iranian sites are already in the list.",
+    w4:"If the connection drops, Banafsh reconnects by itself and, if needed, tries another working server (you can change this in Settings).",
+    w5:"When you close the window you can keep the connection running. Banafsh stays next to the clock (tray), where you can open it, connect or disconnect, or quit.",
+    welcomeFeatures:"Features", welcomeFeaturesText:"Auto-connect to the best server · Ping and speed display · Sites without VPN · Automatic reconnect · Tray next to the clock · Persian and English",
+    bankTitle:"Security note", bankText:"Banafsh servers are free and volunteer-run: each one is set up by an ordinary person somewhere in the world, not by a company. So don’t use Banafsh for sensitive logins like banking or important accounts. Iranian banks don’t open with a non-Iranian IP anyway, and it’s best not to open foreign banks through this service either; if you have to, it’s at your own risk.", logText:"About logs: a server’s owner may keep traffic records (such as which sites you connected to) for at least two weeks, sometimes longer, and the VPN Gate project itself says it keeps connection logs for at least three months. So this is for everyday browsing and access, not for staying fully anonymous.",
+    welcomeStart:"Get started", guide:"Guide",
+    version:'Banafsh 0.1.13'
   },
   fa: {
     home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
@@ -33,7 +42,16 @@ const T = {
     inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد',
     refreshing:'در حال تست سرورها...', saved:'ذخیره شد', reconnectAttempt:'تلاش', of:'از', connectedTo:'متصل به',
     connectionLost:'اتصال قطع شد؛ در حال اتصال مجدد...', failover:'سرور فعلی پاسخ نمی‌دهد؛ در حال امتحان کردن یک سرور سالم دیگر...',
-    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.11'
+    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', welcomeTitle:"به Banafsh خوش اومدی", welcomeIntro:"یه فیلترشکن ساده و رایگان که بدون تنظیمات پیچیده، بهترین سرور سالم رو پیدا می‌کنه و وصلت می‌کنه.", welcomeHow:"چطوری ازش استفاده کنم؟",
+    w1:"روی دکمه‌ی Connect بزن. اگه سروری انتخاب نکرده باشی، Banafsh خودش بهترین سرور سالم رو پیدا می‌کنه.",
+    w2:"می‌خوای خودت انتخاب کنی؟ تب «سرورها» رو باز کن. سرورها تست می‌شن و ping و سرعت (Mbps) هر کدوم کنارشه. با «تست همه» دوباره تستشون کن.",
+    w3:"تب «بدون VPN»: سایت‌هایی که می‌خوای مستقیم و بدون VPN باز بشن رو اینجا اضافه کن. فقط آدرس رو بنویس؛ زیردامنه‌های رایج خودکار اضافه می‌شن. چند سایت ایرانی از قبل تو لیسته.",
+    w4:"اگه اتصال قطع شد، Banafsh خودش دوباره وصل می‌شه و اگه لازم باشه یه سرور سالم دیگه رو امتحان می‌کنه (از تنظیمات قابل تغییره).",
+    w5:"با بستن پنجره می‌تونی اتصال رو نگه داری. Banafsh کنار ساعت (tray) می‌مونه و از آیکنش می‌تونی بازش کنی، وصل/قطع کنی یا خارج بشی.",
+    welcomeFeatures:"امکانات", welcomeFeaturesText:"اتصال خودکار به بهترین سرور · نمایش ping و سرعت · سایت‌های بدون VPN · اتصال مجدد خودکار · tray کنار ساعت · فارسی و English",
+    bankTitle:"نکته‌ی امنیتی", bankText:"سرورهای Banafsh رایگان و داوطلبانه‌ان؛ یعنی هر کدوم رو یه آدم عادی یه گوشه‌ی دنیا راه انداخته، نه یه شرکت. برای همین با Banafsh کارهای حساس مثل لاگین به بانک یا حساب‌های مهم انجام نده. بانک‌های ایرانی که اصلاً با IP غیرایرانی باز نمی‌شن. بانک‌های خارجی رو هم بهتره با این سرویس باز نکنی؛ اگه مجبور شدی، با مسئولیت خودته.", logText:"یه نکته‌ی دیگه درباره‌ی لاگ‌ها: صاحب هر سرور ممکنه اطلاعات رفت‌وآمدت (مثل اینکه به چه سایت‌هایی وصل شدی) رو حداقل دو هفته نگه داره، بعضی‌ها بیشتر. خود پروژه‌ی VPN Gate هم می‌گه لاگ اتصال رو حداقل سه ماه نگه می‌داره. پس این سرویس برای وب‌گردی و دسترسی عادیه، نه برای کاملاً ناشناس موندن.",
+    welcomeStart:"شروع", guide:"راهنما",
+    version:'Banafsh 0.1.13'
   }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
@@ -248,6 +266,21 @@ $('close-modal-x').addEventListener('click', () => closeChoice('cancel'));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !closeModal.hidden) closeChoice('cancel'); });
 window.api.onCloseRequest(openCloseModal);
 
+const welcomeModal = $('welcome-modal');
+function openWelcome() {
+  welcomeModal.hidden = false; welcomeModal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => $('welcome-start').focus(), 0);
+}
+function closeWelcome() {
+  welcomeModal.hidden = true; welcomeModal.setAttribute('aria-hidden', 'true');
+  if (!S.welcomeSeen) { S.welcomeSeen = true; save(); }
+}
+$('welcome-start').addEventListener('click', closeWelcome);
+$('welcome-x').addEventListener('click', closeWelcome);
+welcomeModal.querySelector('.modal-backdrop').addEventListener('click', closeWelcome);
+$('open-guide').addEventListener('click', openWelcome);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !welcomeModal.hidden && closeModal.hidden) closeWelcome(); });
+
 window.api.onEvent((ev) => {
   if (!ev) return;
   if (ev.type === 'connected' || ev.type === 'reconnected') {
@@ -280,5 +313,6 @@ window.api.onEvent((ev) => {
   if (!S.reconnectDelay) { S.reconnectDelay = 10; save(); }
   if (!S.closeBehavior) { S.closeBehavior = 'ask'; save(); }
   show('home'); applyLang();
+  if (!S.welcomeSeen) openWelcome();
   connected = await window.api.status(); renderHome();
 })();

@@ -60,3 +60,18 @@ pre::-webkit-scrollbar-thumb{background:rgba(105,78,143,.82);border-radius:99px}
 .modal-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:0;border-radius:9px;background:transparent;color:#9f91b2;font:500 21px/1 "Segoe UI",sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,transform .15s ease}
 .modal-x:hover{background:#302044;color:#fff;transform:scale(1.04)}
 .modal-x:active{transform:scale(.96)}
+
+.welcome-card{max-width:380px;max-height:calc(100% - 4px);overflow-y:auto}
+.welcome-icon{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto 10px;filter:drop-shadow(0 7px 15px rgba(124,58,237,.3))}
+.welcome-card h2{text-align:center;font-size:19px}
+.welcome-card .modal-message{text-align:center}
+.welcome-card h3{font-size:14px;margin:14px 0 6px;color:#c4b5fd}
+.guide-list{margin:0;padding-inline-start:20px;font-size:13px;line-height:1.9;color:#eee7f8}
+.guide-list li{margin-bottom:5px}
+.guide-list li::marker{color:#a78bfa;font-weight:700}
+.note{margin:12px 0 16px;padding:11px 13px;border-radius:12px;background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.35)}
+.note strong{color:#fde68a;font-size:13px}
+.note p{margin:4px 0 0;font-size:12.5px;line-height:1.8;color:#f1ecfa}
+.welcome-card::-webkit-scrollbar{width:8px}
+.welcome-card::-webkit-scrollbar-thumb{background:#5b4682;border-radius:8px}
+.note p+p{margin-top:8px}

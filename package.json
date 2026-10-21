@@ -1,13 +1,13 @@
 {
   "name": "banafsh",
-  "version": "0.1.11",
+  "version": "0.1.13",
   "description": "Banafsh for Windows",
   "main": "main.js",
   "author": "BANAFSHX",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable --publish never"
+    "dist": "electron-builder --win --publish never"
   },
   "devDependencies": {
     "electron": "31.7.7",
@@ -33,12 +33,32 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "requestedExecutionLevel": "asInvoker",
-      "icon": "build/icon.ico",
+      "icon": "build/icon.ico"
+    },
+    "portable": {
       "artifactName": "Banafsh-${version}-portable.exe"
     },
-    "artifactName": "Banafsh-${version}-portable.exe"
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Banafsh",
+      "uninstallDisplayName": "Banafsh",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Banafsh-${version}-setup.exe"
+    }
   }
 }

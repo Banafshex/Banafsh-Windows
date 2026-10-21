@@ -2,6 +2,13 @@
 
 Windows desktop client for Banafsh.
 
+## 0.1.13 changes
+- Welcome window: replaced the banking tip with a security note (no sensitive logins such as banking, volunteer-run servers, honest note about server and project logs).
+
+## 0.1.12 changes
+- Added a Welcome window (same style as the close dialog) with a short guide, features and a banking note. It opens on first launch and any time from Settings > Guide.
+- The build now produces two files: `Banafsh-<version>-portable.exe` (no install) and `Banafsh-<version>-setup.exe` (per-user installer with Start menu and desktop shortcuts).
+
 ## 0.1.11 changes
 - Settings changed by the app itself (failover server, remembered close choice) are pushed to the window, so a later save can no longer overwrite them.
 - Tray Connect/Disconnect now checks the live connection state instead of a cached one.
