@@ -2,7 +2,7 @@
 
 Windows desktop client for Banafsh.
 
-## 0.1.8 changes
+## 0.1.9 changes
 - Renamed the Windows product/UI to `Banafsh`.
 - Replaced the application, window and tray icon with the supplied shield/lock icon.
 - Added a persistent Windows system tray with Open, Connect/Disconnect and Quit actions.

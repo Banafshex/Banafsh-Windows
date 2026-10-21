@@ -143,6 +143,14 @@ async function isConnected() {
   return r.code === 0 && new RegExp('(^|\r?\n)\s*' + CONN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\s|$)', 'i').test(r.out);
 }
 
+function startupProgress(percent, text = '') {
+  const p = Math.max(0, Math.min(100, Number(percent) || 0));
+  startupState = { percent: p, text: text || startupState.text };
+  if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
+    try { win.webContents.send('startup:progress', startupState); } catch {}
+  }
+}
+
 function emitEvent(type, data = {}) {
   if (win && !win.isDestroyed()) win.webContents.send('vpn:event', { type, ...data });
   if (type === 'connected' || type === 'reconnected') lastKnownConnected = true;
