@@ -1,6 +1,6 @@
 {
   "name": "banafsh",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "Banafsh for Windows",
   "main": "main.js",
   "author": "BANAFSHX",
@@ -23,7 +23,8 @@
       "main.js",
       "preload.js",
       "renderer/**",
-      "build/icon.png"
+      "build/icon.png",
+      "!**/*.bak"
     ],
     "win": {
       "target": [

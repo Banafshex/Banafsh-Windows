@@ -1,8 +1,8 @@
-# Banafsh for Windows
+# Banafsh
 
-Windows desktop client for Banafsh SSTP.
+Windows desktop client for Banafsh.
 
-## 0.1.3 changes
+## 0.1.8 changes
 - Renamed the Windows product/UI to `Banafsh`.
 - Replaced the application, window and tray icon with the supplied shield/lock icon.
 - Added a persistent Windows system tray with Open, Connect/Disconnect and Quit actions.
@@ -25,3 +25,10 @@ Windows desktop client for Banafsh SSTP.
 npm install
 npm run dist
 ```
+
+- Keeps all valid server ports in the list and tests each server on its published port.
+- Prevents intentional disconnects during server switching from triggering an extra reconnect.
+- Merges settings updates so remembered close behavior and failover server choices are not overwritten by stale renderer state.
+- Startup progress state is retained until the renderer is ready, so a fast 100% event cannot get lost.
+- Reconnect can be cancelled from the main connection button.
+- Uses `rasdial` for periodic connection-state checks instead of PowerShell.

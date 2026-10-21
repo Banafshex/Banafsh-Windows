@@ -25,7 +25,6 @@ const DEFAULTS = {
 let routes = [];
 let win = null;
 let tray = null;
-let trayPopup = null;
 let isQuitting = false;
 let closePrompt = false;
 let monitorTimer = null;
@@ -36,6 +35,9 @@ let manualDisconnect = false;
 let serverCache = [];
 let healthCache = new Map();
 let reconnectGeneration = 0;
+let intentionalDisconnect = false;
+let startupState = { percent: 0, text: 'در حال آماده‌سازی...' };
+let startupReady = false;
 
 const dataDir = process.env.PORTABLE_EXECUTABLE_DIR || app.getPath('userData');
 const SF = path.join(dataDir, 'banafsh-settings.json');
@@ -46,7 +48,10 @@ function loadSettings() {
   catch { return { ...DEFAULTS }; }
 }
 function saveSettings(s) {
-  try { fs.writeFileSync(SF, JSON.stringify({ ...DEFAULTS, ...s }, null, 1)); } catch (e) { logMain('settings save failed: ' + e.message); }
+  try {
+    const current = loadSettings();
+    fs.writeFileSync(SF, JSON.stringify({ ...DEFAULTS, ...current, ...s }, null, 1));
+  } catch (e) { logMain('settings save failed: ' + e.message); }
 }
 
 const run = (file, args) => new Promise((res) =>
@@ -72,13 +77,13 @@ function normServers(raw) {
     const host = String(s.host || s.hostname || s.address || s.ip || '').trim();
     if (!host || !HOST_RE.test(host) || seen.has(host)) continue;
     const port = Number(s.port) || 443;
-    if (port !== 443) continue;
+    if (port < 1 || port > 65535) continue;
     seen.add(host);
     const speed = Number(s.speed_mbps ?? s.speedMbps ?? s.speed ?? s.bandwidth_mbps ?? s.bandwidth ?? 0);
     const ping = Number(s.ping ?? s.latency ?? 0);
     out.push({
       host,
-      port: 443,
+      port,
       user: s.user || s.username || 'vpn',
       pass: s.pass || s.password || 'vpn',
       cc: String(s.cc || s.country_short || s.countryShort || s.country_code || s.countryCode || '').slice(0, 2).toUpperCase(),
@@ -131,8 +136,11 @@ async function disconnectAll() {
   await clearRoutes();
 }
 async function isConnected() {
-  const r = await ps(`(Get-VpnConnection -Name '${CONN}' -ErrorAction SilentlyContinue).ConnectionStatus`);
-  return r.out.trim() === 'Connected';
+  // `rasdial` is enough to determine whether our named RAS/VPN connection is
+  // active and avoids spawning PowerShell every polling cycle. The connection
+  // name is fixed and not localized, so this remains reliable on localized Windows.
+  const r = await run('rasdial', []);
+  return r.code === 0 && new RegExp('(^|\r?\n)\s*' + CONN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\s|$)', 'i').test(r.out);
 }
 
 function emitEvent(type, data = {}) {
@@ -140,7 +148,7 @@ function emitEvent(type, data = {}) {
   if (type === 'connected' || type === 'reconnected') lastKnownConnected = true;
   if (type === 'status' && typeof data.connected === 'boolean') lastKnownConnected = data.connected;
   if (type === 'connectionLost' || type === 'reconnectFailed' || type === 'connectionError') lastKnownConnected = false;
-  updateTrayPopup();
+  refreshTrayMenu();
 }
 function logMain(m) {
   try { fs.appendFileSync(LOGF, new Date().toISOString() + ' ' + m + '\n'); } catch {}
@@ -165,40 +173,56 @@ function sortServers(arr) {
 }
 
 async function connectVpn({ host, port = 443, user, pass, sites }) {
-  port = 443;
-  if (!HOST_RE.test(host)) return { ok: false, error: 'bad host' };
+  port = Number(port) || 443;
+  if (!HOST_RE.test(host) || port < 1 || port > 65535) return { ok: false, error: 'bad host or port' };
+
+  // This is an intentional disconnect as part of a connect/switch operation.
+  // The monitor must ignore this expected state transition and never schedule
+  // a second reconnect while the new connection is being established.
+  intentionalDisconnect = true;
   manualDisconnect = false;
-  await disconnectAll();
-  const gw = await getGateway();
-  const ips = await resolveSites(Array.isArray(sites) ? sites : []);
-  const common = `-Name '${CONN}' -ServerAddress '${host}' -TunnelType Sstp -EncryptionLevel Required`;
-  let r = await ps(`if (Get-VpnConnection -Name '${CONN}' -ErrorAction SilentlyContinue) { Set-VpnConnection ${common} -Force } else { Add-VpnConnection ${common} -AuthenticationMethod MSChapv2 -Force }`);
-  if (r.code) return { ok: false, error: (r.err || r.out).trim() };
-  r = await run('rasdial', [CONN, String(user || 'vpn'), String(pass || 'vpn')]);
-  if (r.code) return { ok: false, error: (r.out + r.err).trim() };
-  // A manual disconnect can happen while rasdial is still running. Never let a
-  // late reconnect operation silently bring the VPN back after the user asked
-  // to disconnect.
-  if (manualDisconnect) {
+  try {
     await disconnectAll();
-    return { ok: false, error: 'cancelled' };
-  }
-  if (gw && gw.hop) {
-    for (const ip of ips) {
-      const x = await run('route', ['add', ip, 'mask', '255.255.255.255', gw.hop, 'if', String(gw.idx)]);
-      if (!x.code) routes.push(ip);
+    if (manualDisconnect) return { ok: false, error: 'cancelled' };
+    const gw = await getGateway();
+    const ips = await resolveSites(Array.isArray(sites) ? sites : []);
+    if (manualDisconnect) return { ok: false, error: 'cancelled' };
+    const common = `-Name '${CONN}' -ServerAddress '${host}' -TunnelType Sstp -EncryptionLevel Required`;
+    let r = await ps(`if (Get-VpnConnection -Name '${CONN}' -ErrorAction SilentlyContinue) { Set-VpnConnection ${common} -Force } else { Add-VpnConnection ${common} -AuthenticationMethod MSChapv2 -Force }`);
+    if (r.code) return { ok: false, error: (r.err || r.out).trim() };
+    if (manualDisconnect) return { ok: false, error: 'cancelled' };
+    r = await run('rasdial', [CONN, String(user || 'vpn'), String(pass || 'vpn')]);
+    if (r.code) return { ok: false, error: (r.out + r.err).trim() };
+
+    // A manual disconnect can happen while rasdial is still running. Never let
+    // a late connect operation silently bring the VPN back after the user asked
+    // to disconnect.
+    if (manualDisconnect) {
+      await disconnectAll();
+      return { ok: false, error: 'cancelled' };
     }
+
+    if (gw && gw.hop) {
+      for (const ip of ips) {
+        const x = await run('route', ['add', ip, 'mask', '255.255.255.255', gw.hop, 'if', String(gw.idx)]);
+        if (!x.code) routes.push(ip);
+      }
+    }
+    lastKnownConnected = true;
+    emitEvent('connected', { host, port });
+    return { ok: true, bypassed: routes.length, port };
+  } finally {
+    intentionalDisconnect = false;
+    refreshTrayMenu().catch(logErr);
   }
-  lastKnownConnected = true;
-  emitEvent('connected', { host });
-  return { ok: true, bypassed: routes.length, port };
 }
 
 function getSavedServer() {
   const s = loadSettings();
   const last = s.last;
   if (!last || !last.host || !HOST_RE.test(last.host)) return null;
-  return { ...last, port: 443, user: last.user || 'vpn', pass: last.pass || 'vpn', sites: Array.isArray(s.sites) ? s.sites : [] };
+  const port = Number(last.port) || 443;
+  return { ...last, port: Math.min(65535, Math.max(1, port)), user: last.user || 'vpn', pass: last.pass || 'vpn', sites: Array.isArray(s.sites) ? s.sites : [] };
 }
 
 async function connectSaved(serverOverride = null) {
@@ -299,44 +323,33 @@ function localizedTray() {
   };
 }
 
-function updateTrayPopup() {
-  if (!trayPopup || trayPopup.isDestroyed()) return;
-  const l = localizedTray();
-  trayPopup.webContents.send('tray:state', { connected: !!lastKnownConnected, busy: reconnecting });
-  trayPopup.setTitle(lastKnownConnected ? l.connected : l.offline);
-  if (tray) tray.setToolTip(lastKnownConnected ? l.connected : l.offline);
-}
-
-function showTrayPopup() {
+async function refreshTrayMenu() {
   if (!tray) return;
-  if (trayPopup && !trayPopup.isDestroyed()) {
-    trayPopup.show();
-    updateTrayPopup();
-    return;
-  }
-  const iconPath = path.join(__dirname, 'build', 'icon.png');
-  trayPopup = new BrowserWindow({
-    width: 230, height: 176, frame: false, transparent: true, resizable: false,
-    skipTaskbar: true, alwaysOnTop: true, show: false, backgroundColor: '#00000000',
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
-  });
-  trayPopup.loadFile(path.join(__dirname, 'renderer', 'tray.html'));
-  trayPopup.on('blur', () => { if (!trayPopup.isDestroyed()) trayPopup.hide(); });
-  trayPopup.webContents.once('did-finish-load', () => {
-    const b = tray.getBounds();
-    const { screen } = require('electron');
-    const display = screen.getDisplayNearestPoint({ x: b.x, y: b.y });
-    const wa = display.workArea;
-    const x = Math.max(wa.x + 8, Math.min(b.x + b.width - 230, wa.x + wa.width - 238));
-    const y = Math.max(wa.y + 8, b.y - 184);
-    trayPopup.setPosition(Math.round(x), Math.round(y), false);
-    trayPopup.show();
-    updateTrayPopup();
-  });
-}
-
-function hideTrayPopup() {
-  if (trayPopup && !trayPopup.isDestroyed()) trayPopup.hide();
+  const l = localizedTray();
+  const c = !!lastKnownConnected;
+  tray.setToolTip(`Banafsh — ${c ? l.connected : l.offline}`);
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: c ? l.connected : l.offline, enabled: false },
+    { type: 'separator' },
+    { label: reconnecting ? l.connecting : (c ? l.disconnect : l.connect), enabled: !reconnecting, click: async () => {
+      if (reconnecting) return;
+      if (c) {
+        manualDisconnect = true;
+        cancelReconnect();
+        await disconnectAll();
+        lastKnownConnected = false;
+        emitEvent('status', { connected: false });
+      } else {
+        manualDisconnect = false;
+        const r = await connectSaved();
+        if (!r.ok) emitEvent('connectionError', { error: r.error });
+      }
+      refreshTrayMenu().catch(logErr);
+    } },
+    { label: l.open, click: () => showWindow() },
+    { type: 'separator' },
+    { label: l.quit, click: () => performQuit().catch(logErr) }
+  ]));
 }
 
 function showWindow() {
@@ -352,34 +365,14 @@ function showWindow() {
 function createTray() {
   if (tray) return;
   const iconPath = path.join(__dirname, 'build', 'icon.png');
-  const icon = nativeImage.createFromPath(iconPath);
+  let icon = nativeImage.createFromPath(iconPath);
+  if (!icon.isEmpty()) icon = icon.resize({ width: 16, height: 16 });
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.on('click', showWindow);
   tray.on('double-click', showWindow);
-  tray.on('right-click', showTrayPopup);
-  updateTrayPopup();
+  tray.on('right-click', () => refreshTrayMenu().catch(logErr));
+  refreshTrayMenu().catch(logErr);
 }
-
-ipcMain.handle('tray:action', async (_, action) => {
-  hideTrayPopup();
-  if (action === 'open') return showWindow();
-  if (action === 'quit') return performQuit();
-  if (action === 'toggle') {
-    const c = await isConnected();
-    if (c) {
-      manualDisconnect = true;
-      cancelReconnect();
-      await disconnectAll();
-      lastKnownConnected = false;
-      emitEvent('status', { connected: false });
-    } else {
-      manualDisconnect = false;
-      const r = await connectSaved();
-      if (!r.ok) emitEvent('connectionError', { error: r.error });
-    }
-    updateTrayPopup();
-  }
-});
 
 ipcMain.handle('window:close-choice', async (_, choice, remember) => {
   if (!win || win.isDestroyed()) return false;
@@ -411,9 +404,19 @@ ipcMain.handle('servers:load', async () => {
 });
 ipcMain.handle('servers:test', (_, host, port) => (HOST_RE.test(host) ? tcp(host, Number(port) || 443) : -1));
 ipcMain.handle('servers:health', (_, results) => { updateHealth(results); return true; });
+ipcMain.handle('startup:get', () => startupState);
 ipcMain.handle('settings:get', () => loadSettings());
-ipcMain.handle('settings:set', (_, s) => { saveSettings(s); updateTrayPopup(); return true; });
+ipcMain.handle('settings:set', (_, s) => { saveSettings(s); refreshTrayMenu().catch(logErr); return true; });
 ipcMain.handle('vpn:connect', async (_, opts) => connectVpn(opts));
+ipcMain.handle('vpn:cancel-reconnect', async () => {
+  if (!reconnecting) return false;
+  manualDisconnect = true;
+  cancelReconnect();
+  try { await disconnectAll(); } catch (e) { logErr(e); }
+  lastKnownConnected = false;
+  emitEvent('status', { connected: false });
+  return true;
+});
 ipcMain.handle('vpn:disconnect', async () => {
   manualDisconnect = true;
   cancelReconnect();
@@ -448,7 +451,6 @@ async function performQuit() {
   manualDisconnect = true;
   cancelReconnect();
   await disconnectAll();
-  hideTrayPopup();
   app.quit();
 }
 
@@ -475,7 +477,7 @@ function createWindow() {
 function startMonitor() {
   clearInterval(monitorTimer);
   monitorTimer = setInterval(async () => {
-    if (isQuitting) return;
+    if (isQuitting || intentionalDisconnect || !lastKnownConnected) return;
     try {
       const c = await isConnected();
       if (lastKnownConnected && !c && !manualDisconnect) {
@@ -484,25 +486,53 @@ function startMonitor() {
       }
       if (c && reconnecting) emitEvent('status', { connected: true });
       lastKnownConnected = c;
-      updateTrayPopup();
+      refreshTrayMenu();
     } catch (e) { logErr(e); }
-  }, 5000);
+  }, 7000);
 }
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => showWindow());
 
 app.whenReady().then(async () => {
   try {
-    if (!(await isAdmin())) {
+
+    // Show the UI immediately. Permission and network checks happen behind
+    // the startup screen instead of blocking window creation for several seconds.
+    createWindow();
+    startupProgress(8);
+    createTray();
+    startupProgress(20);
+
+    const adminPromise = isAdmin();
+    startupProgress(35);
+    const admin = await adminPromise;
+    if (!admin) {
+      startupProgress(55);
       const r = await relaunchAsAdmin();
       if (r.code) dialog.showErrorBox('Banafsh', 'برای کار کردن برنامه اجازه‌ی Administrator لازمه.\nThis app needs Administrator permission.');
       app.quit(); return;
     }
-    if (!app.requestSingleInstanceLock()) { app.quit(); return; }
-    app.on('second-instance', () => showWindow());
-    createWindow();
-    createTray();
+
+    startupProgress(62);
     startMonitor();
+    startupProgress(72);
     const s = loadSettings();
+    startupProgress(82);
+
+    // Read the actual VPN state once at startup, but do not block the window
+    // from being displayed while the UI is loading.
+    const c = await isConnected();
+    lastKnownConnected = c;
+    startupProgress(94);
+    refreshTrayMenu();
+
     if (s.reconnectOnStart && s.last) setTimeout(() => connectSaved().catch(logErr), 1200);
+    startupProgress(100);
+    if (win && !win.isDestroyed()) win.webContents.send('startup:ready');
   } catch (e) { logErr(e); dialog.showErrorBox('Banafsh', String((e && e.message) || e)); app.quit(); }
 });
 
@@ -517,3 +547,4 @@ app.on('before-quit', async (e) => {
   e.preventDefault();
   await performQuit();
 });
+}

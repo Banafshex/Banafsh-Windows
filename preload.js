@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('api', {
   health: (results) => i.invoke('servers:health', results),
   connect: (o) => i.invoke('vpn:connect', o),
   disconnect: () => i.invoke('vpn:disconnect'),
+  cancelReconnect: () => i.invoke('vpn:cancel-reconnect'),
   status: () => i.invoke('vpn:status'),
   get: () => i.invoke('settings:get'),
   set: (s) => i.invoke('settings:set', s),
@@ -12,5 +13,7 @@ contextBridge.exposeInMainWorld('api', {
   trayAction: (action) => i.invoke('tray:action', action),
   onCloseRequest: (fn) => i.on('vpn:event', (_, data) => { if (data && data.type === 'closeRequest') fn(data); }),
   onTrayState: (fn) => i.on('tray:state', (_, data) => fn(data)),
+  onStartup: (fn) => i.on('startup:progress', (_, data) => fn(data)),
+  startupGet: () => i.invoke('startup:get'),
   onEvent: (fn) => i.on('vpn:event', (_, data) => fn(data))
 });

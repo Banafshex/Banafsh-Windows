@@ -7,6 +7,15 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="startup" class="startup-overlay" aria-live="polite">
+  <div class="startup-card">
+    <img src="../build/icon.png" alt="" class="startup-icon">
+    <div class="startup-title">Banafsh</div>
+    <div id="startup-text" class="startup-text">در حال آماده‌سازی...</div>
+    <div class="startup-track"><div id="startup-bar" class="startup-bar"></div></div>
+    <div id="startup-percent" class="startup-percent">0%</div>
+  </div>
+</div>
 <main>
   <section id="s-home" class="screen">
     <div class="center">
@@ -116,7 +125,7 @@
 <div id="close-modal" class="modal" hidden aria-hidden="true">
   <div class="modal-backdrop"></div>
   <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">
-    <div class="modal-icon">×</div>
+    <button id="close-modal-x" class="modal-x" type="button" aria-label="Close">×</button>
     <h2 id="close-modal-title" data-t="closeModalTitle"></h2>
     <p id="close-modal-message" class="modal-message"></p>
     <p class="modal-detail" data-t="closeModalDetail"></p>
