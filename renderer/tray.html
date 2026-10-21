@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'">
+<link rel="stylesheet" href="tray.css">
+</head>
+<body>
+  <div class="tray-menu">
+    <div class="status-row">
+      <span id="dot" class="dot"></span>
+      <span id="status">قطع شده</span>
+    </div>
+    <div class="line"></div>
+    <button id="toggle"></button>
+    <button id="open"></button>
+    <div class="line"></div>
+    <button id="quit" class="danger"></button>
+  </div>
+<script>
+const $ = id => document.getElementById(id);
+let fa = true;
+function text(){
+  fa = document.documentElement.lang === 'fa';
+  $('status').textContent = fa ? 'قطع شده' : 'Disconnected';
+  $('toggle').textContent = fa ? 'اتصال' : 'Connect';
+  $('open').textContent = fa ? 'باز کردن' : 'Open';
+  $('quit').textContent = fa ? 'خروج' : 'Quit';
+}
+function render(s){
+  const connected = !!s?.connected;
+  $('dot').className = 'dot ' + (connected ? 'ok' : 'off');
+  $('status').textContent = connected ? (fa ? 'متصل' : 'Connected') : (fa ? 'قطع شده' : 'Disconnected');
+  $('toggle').textContent = connected ? (fa ? 'قطع اتصال' : 'Disconnect') : (fa ? 'اتصال' : 'Connect');
+  $('toggle').disabled = !!s?.busy;
+}
+$('toggle').onclick = () => window.api.trayAction('toggle');
+$('open').onclick = () => window.api.trayAction('open');
+$('quit').onclick = () => window.api.trayAction('quit');
+window.api.onTrayState(render);
+window.api.get().then(s => { fa = s?.lang === 'fa'; document.documentElement.lang = fa ? 'fa' : 'en'; document.documentElement.dir = fa ? 'rtl' : 'ltr'; text(); });
+</script>
+</body>
+</html>

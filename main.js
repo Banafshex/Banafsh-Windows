@@ -25,6 +25,7 @@ const DEFAULTS = {
 let routes = [];
 let win = null;
 let tray = null;
+let trayPopup = null;
 let isQuitting = false;
 let closePrompt = false;
 let monitorTimer = null;
@@ -70,12 +71,14 @@ function normServers(raw) {
   for (const s of arr) {
     const host = String(s.host || s.hostname || s.address || s.ip || '').trim();
     if (!host || !HOST_RE.test(host) || seen.has(host)) continue;
+    const port = Number(s.port) || 443;
+    if (port !== 443) continue;
     seen.add(host);
     const speed = Number(s.speed_mbps ?? s.speedMbps ?? s.speed ?? s.bandwidth_mbps ?? s.bandwidth ?? 0);
     const ping = Number(s.ping ?? s.latency ?? 0);
     out.push({
       host,
-      port: Number(s.port) || 443,
+      port: 443,
       user: s.user || s.username || 'vpn',
       pass: s.pass || s.password || 'vpn',
       cc: String(s.cc || s.country_short || s.countryShort || s.country_code || s.countryCode || '').slice(0, 2).toUpperCase(),
@@ -134,6 +137,10 @@ async function isConnected() {
 
 function emitEvent(type, data = {}) {
   if (win && !win.isDestroyed()) win.webContents.send('vpn:event', { type, ...data });
+  if (type === 'connected' || type === 'reconnected') lastKnownConnected = true;
+  if (type === 'status' && typeof data.connected === 'boolean') lastKnownConnected = data.connected;
+  if (type === 'connectionLost' || type === 'reconnectFailed' || type === 'connectionError') lastKnownConnected = false;
+  updateTrayPopup();
 }
 function logMain(m) {
   try { fs.appendFileSync(LOGF, new Date().toISOString() + ' ' + m + '\n'); } catch {}
@@ -158,6 +165,7 @@ function sortServers(arr) {
 }
 
 async function connectVpn({ host, port = 443, user, pass, sites }) {
+  port = 443;
   if (!HOST_RE.test(host)) return { ok: false, error: 'bad host' };
   manualDisconnect = false;
   await disconnectAll();
@@ -190,7 +198,7 @@ function getSavedServer() {
   const s = loadSettings();
   const last = s.last;
   if (!last || !last.host || !HOST_RE.test(last.host)) return null;
-  return { ...last, port: last.port || 443, user: last.user || 'vpn', pass: last.pass || 'vpn', sites: Array.isArray(s.sites) ? s.sites : [] };
+  return { ...last, port: 443, user: last.user || 'vpn', pass: last.pass || 'vpn', sites: Array.isArray(s.sites) ? s.sites : [] };
 }
 
 async function connectSaved(serverOverride = null) {
@@ -283,52 +291,52 @@ function cancelReconnect() {
 function localizedTray() {
   const fa = loadSettings().lang === 'fa';
   return fa ? {
-    title: 'Banafsh', connect: 'اتصال', disconnect: 'قطع اتصال', open: 'باز کردن Banafsh', quit: 'خروج از Banafsh', connected: 'وصل', offline: 'وصل نیست'
+    connect: 'اتصال', disconnect: 'قطع اتصال', open: 'باز کردن', quit: 'خروج',
+    connected: 'متصل', offline: 'قطع شده', connecting: 'در حال اتصال...'
   } : {
-    title: 'Banafsh', connect: 'Connect', disconnect: 'Disconnect', open: 'Open Banafsh', quit: 'Quit Banafsh', connected: 'Connected', offline: 'Disconnected'
+    connect: 'Connect', disconnect: 'Disconnect', open: 'Open', quit: 'Quit',
+    connected: 'Connected', offline: 'Disconnected', connecting: 'Connecting...'
   };
 }
 
-async function refreshTrayMenu() {
-  if (!tray) return;
-  const c = await isConnected();
+function updateTrayPopup() {
+  if (!trayPopup || trayPopup.isDestroyed()) return;
   const l = localizedTray();
-  tray.setToolTip(`Banafsh — ${c ? l.connected : l.offline}`);
-  tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Banafsh', enabled: false },
-    { label: c ? l.connected : l.offline, enabled: false },
-    { type: 'separator' },
-    { label: c ? l.disconnect : l.connect, click: async () => {
-      if (c) {
-        manualDisconnect = true;
-        cancelReconnect();
-        await disconnectAll();
-        lastKnownConnected = false;
-        emitEvent('status', { connected: false });
-      } else {
-        manualDisconnect = false;
-        const r = await connectSaved();
-        if (!r.ok) emitEvent('connectionError', { error: r.error });
-      }
-      refreshTrayMenu();
-    } },
-    { label: l.open, click: () => showWindow() },
-    { type: 'separator' },
-    { label: l.quit, click: async () => {
-      isQuitting = true;
-      manualDisconnect = true;
-      cancelReconnect();
-      await disconnectAll();
-      app.quit();
-    } }
-  ]));
+  trayPopup.webContents.send('tray:state', { connected: !!lastKnownConnected, busy: reconnecting });
+  trayPopup.setTitle(lastKnownConnected ? l.connected : l.offline);
+  if (tray) tray.setToolTip(lastKnownConnected ? l.connected : l.offline);
 }
 
-function showWindow() {
-  if (!win || win.isDestroyed()) return;
-  if (win.isMinimized()) win.restore();
-  win.show();
-  win.focus();
+function showTrayPopup() {
+  if (!tray) return;
+  if (trayPopup && !trayPopup.isDestroyed()) {
+    trayPopup.show();
+    updateTrayPopup();
+    return;
+  }
+  const iconPath = path.join(__dirname, 'build', 'icon.png');
+  trayPopup = new BrowserWindow({
+    width: 230, height: 176, frame: false, transparent: true, resizable: false,
+    skipTaskbar: true, alwaysOnTop: true, show: false, backgroundColor: '#00000000',
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+  });
+  trayPopup.loadFile(path.join(__dirname, 'renderer', 'tray.html'));
+  trayPopup.on('blur', () => { if (!trayPopup.isDestroyed()) trayPopup.hide(); });
+  trayPopup.webContents.once('did-finish-load', () => {
+    const b = tray.getBounds();
+    const { screen } = require('electron');
+    const display = screen.getDisplayNearestPoint({ x: b.x, y: b.y });
+    const wa = display.workArea;
+    const x = Math.max(wa.x + 8, Math.min(b.x + b.width - 230, wa.x + wa.width - 238));
+    const y = Math.max(wa.y + 8, b.y - 184);
+    trayPopup.setPosition(Math.round(x), Math.round(y), false);
+    trayPopup.show();
+    updateTrayPopup();
+  });
+}
+
+function hideTrayPopup() {
+  if (trayPopup && !trayPopup.isDestroyed()) trayPopup.hide();
 }
 
 function createTray() {
@@ -338,9 +346,47 @@ function createTray() {
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.on('click', showWindow);
   tray.on('double-click', showWindow);
-  tray.on('right-click', () => refreshTrayMenu().catch(logErr));
-  refreshTrayMenu().catch(logErr);
+  tray.on('right-click', showTrayPopup);
+  updateTrayPopup();
 }
+
+ipcMain.handle('tray:action', async (_, action) => {
+  hideTrayPopup();
+  if (action === 'open') return showWindow();
+  if (action === 'quit') return performQuit();
+  if (action === 'toggle') {
+    const c = await isConnected();
+    if (c) {
+      manualDisconnect = true;
+      cancelReconnect();
+      await disconnectAll();
+      lastKnownConnected = false;
+      emitEvent('status', { connected: false });
+    } else {
+      manualDisconnect = false;
+      const r = await connectSaved();
+      if (!r.ok) emitEvent('connectionError', { error: r.error });
+    }
+    updateTrayPopup();
+  }
+});
+
+ipcMain.handle('window:close-choice', async (_, choice, remember) => {
+  if (!win || win.isDestroyed()) return false;
+  const s = loadSettings();
+  if (remember && (choice === 'keep' || choice === 'quit')) saveSettings({ ...s, closeBehavior: choice });
+  if (choice === 'keep') {
+    closePrompt = false;
+    win.hide();
+    return true;
+  }
+  if (choice === 'quit') {
+    await performQuit();
+    return true;
+  }
+  closePrompt = false;
+  return false;
+});
 
 ipcMain.handle('servers:load', async () => {
   let last;
@@ -356,7 +402,7 @@ ipcMain.handle('servers:load', async () => {
 ipcMain.handle('servers:test', (_, host, port) => (HOST_RE.test(host) ? tcp(host, Number(port) || 443) : -1));
 ipcMain.handle('servers:health', (_, results) => { updateHealth(results); return true; });
 ipcMain.handle('settings:get', () => loadSettings());
-ipcMain.handle('settings:set', (_, s) => { saveSettings(s); refreshTrayMenu().catch(logErr); return true; });
+ipcMain.handle('settings:set', (_, s) => { saveSettings(s); updateTrayPopup(); return true; });
 ipcMain.handle('vpn:connect', async (_, opts) => connectVpn(opts));
 ipcMain.handle('vpn:disconnect', async () => {
   manualDisconnect = true;
@@ -392,6 +438,7 @@ async function performQuit() {
   manualDisconnect = true;
   cancelReconnect();
   await disconnectAll();
+  hideTrayPopup();
   app.quit();
 }
 
@@ -403,43 +450,15 @@ function createWindow() {
   });
   win.setMenu(null);
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  win.on('close', async (e) => {
+  win.on('close', (e) => {
     if (isQuitting) return;
     e.preventDefault();
     if (closePrompt) return;
+    const s = loadSettings();
+    if (s.closeBehavior === 'keep') { win.hide(); return; }
+    if (s.closeBehavior === 'quit') { performQuit().catch(logErr); return; }
     closePrompt = true;
-    try {
-      const s = loadSettings();
-      if (s.closeBehavior === 'keep') { win.hide(); return; }
-      if (s.closeBehavior === 'quit') { await performQuit(); return; }
-
-      const connectedNow = await isConnected();
-      const fa = s.lang === 'fa';
-      const r = await dialog.showMessageBox(win, {
-        type: 'question',
-        title: 'Banafsh',
-        message: fa ? (connectedNow ? 'اتصال Banafsh برقرار است.' : 'Banafsh در حال اجراست.') : (connectedNow ? 'Banafsh is connected.' : 'Banafsh is still running.'),
-        detail: fa
-          ? 'می‌خواهی فقط پنجره بسته شود و Banafsh کنار ساعت بماند، یا برنامه کاملاً بسته شود؟'
-          : 'Do you want to close only the window and keep Banafsh in the system tray, or quit the application completely?',
-        buttons: fa ? ['فقط پنجره بسته شود و کنار ساعت بماند', 'کامل بسته شود', 'انصراف'] : ['Close window and keep in tray', 'Quit Banafsh', 'Cancel'],
-        defaultId: 0,
-        cancelId: 2,
-        checkboxLabel: fa ? 'دیگه این سؤال رو نپرس' : "Don't ask me again",
-        checkboxChecked: false,
-        noLink: true
-      });
-
-      if (r.response === 0) {
-        if (r.checkboxChecked) saveSettings({ ...s, closeBehavior: 'keep' });
-        win.hide();
-      } else if (r.response === 1) {
-        if (r.checkboxChecked) saveSettings({ ...s, closeBehavior: 'quit' });
-        if (connectedNow) { manualDisconnect = true; await disconnectAll(); }
-        await performQuit();
-      }
-    } catch (err) { logErr(err); }
-    finally { closePrompt = false; }
+    emitEvent('closeRequest', { connected: lastKnownConnected, lang: s.lang });
   });
 }
 
@@ -454,8 +473,8 @@ function startMonitor() {
         scheduleReconnect('connection lost');
       }
       if (c && reconnecting) emitEvent('status', { connected: true });
-      if (c !== lastKnownConnected) refreshTrayMenu().catch(() => {});
       lastKnownConnected = c;
+      updateTrayPopup();
     } catch (e) { logErr(e); }
   }, 5000);
 }

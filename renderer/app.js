@@ -2,7 +2,7 @@ const T = {
   en: {
     home:'Home', servers:'Servers', bypass:'No VPN', settings:'Settings', off:'Not connected', busy:'Connecting...', on:'Connected',
     reconnecting:'Reconnecting...', switching:'Trying another server...',
-    connect:'Connect', disconnect:'Disconnect', change:'Change', free:'Pick a free server', none:'No server selected',
+    connect:'Connect', disconnect:'Disconnect', connecting:'Please wait...', disconnecting:'Disconnecting...', reconnectingButton:'Reconnecting...', change:'Change', free:'Pick a free server', none:'No server selected',
     stitle:'Free servers', snote:'Auto-tested when you open this list; broken ones go last', ok:'Online', bad:'Failed', wait:'Testing', testall:'Test all',
     btitle:'Sites without VPN', bnote:'These sites open directly, without VPN, while connected', add:'Add', ph:'e.g. site.ir',
     sub:'Common subdomains (www, pay, api...) are added automatically', lang:'Language', about:'About', log:'Log', advanced:'Advanced',
@@ -15,12 +15,12 @@ const T = {
     inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list',
     refreshing:'Testing servers...', saved:'Saved', reconnectAttempt:'Attempt', of:'of', connectedTo:'Connected to',
     connectionLost:'Connection lost. Reconnecting...', failover:'Current server is not responding. Trying another healthy server...',
-    reconnectFailed:'Automatic reconnect failed.', version:'Banafsh 0.1.3'
+    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.5'
   },
   fa: {
     home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
     reconnecting:'در حال اتصال مجدد...', switching:'در حال امتحان کردن سرور دیگر...',
-    connect:'اتصال', disconnect:'قطع اتصال', change:'تغییر', free:'انتخاب سرور رایگان', none:'سروری انتخاب نشده',
+    connect:'اتصال', disconnect:'قطع اتصال', connecting:'لطفاً منتظر بمانید...', disconnecting:'در حال قطع اتصال...', reconnectingButton:'در حال اتصال مجدد...', change:'تغییر', free:'انتخاب سرور رایگان', none:'سروری انتخاب نشده',
     stitle:'سرورهای رایگان', snote:'با باز کردن این لیست خودکار تست می‌شوند؛ خراب‌ها آخر لیست می‌روند', ok:'سالم', bad:'خراب', wait:'در حال تست', testall:'تست همه',
     btitle:'سایت‌های بدون VPN', bnote:'این سایت‌ها موقع اتصال مستقیم و بدون VPN باز می‌شن', add:'افزودن', ph:'مثلا site.ir',
     sub:'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شن', lang:'زبان', about:'درباره', log:'گزارش (Log)', advanced:'پیشرفته',
@@ -33,12 +33,12 @@ const T = {
     inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد',
     refreshing:'در حال تست سرورها...', saved:'ذخیره شد', reconnectAttempt:'تلاش', of:'از', connectedTo:'متصل به',
     connectionLost:'اتصال قطع شد؛ در حال اتصال مجدد...', failover:'سرور فعلی پاسخ نمی‌دهد؛ در حال امتحان کردن یک سرور سالم دیگر...',
-    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', version:'Banafsh 0.1.3'
+    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.5'
   }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
 let S = { lang: 'fa', sites: null, last: null, autoReconnect: true, reconnectOnStart: false, reconnectDelay: 10, reconnectAttempts: 3, closeBehavior: 'ask' };
-let servers = [], connected = false, busy = false, testing = false, serversLoaded = false, serversTested = false;
+let servers = [], connected = false, busy = false, busyMode = 'connecting', testing = false, serversLoaded = false, serversTested = false;
 const logs = [];
 const $ = (id) => document.getElementById(id);
 const t = (k) => T[S.lang][k] || k;
@@ -69,11 +69,11 @@ function sortServers(arr) {
   const order = { ok: 0, wait: 1, bad: 2 };
   return [...arr].sort((a, b) => order[a.state] - order[b.state] || Number(b.speedMbps || 0) - Number(a.speedMbps || 0) || Number(a.ms > 0 ? a.ms : Infinity) - Number(b.ms > 0 ? b.ms : Infinity) || Number(a.ping || Infinity) - Number(b.ping || Infinity));
 }
-function setBusy(v) { busy = v; renderHome(); renderServers(); }
+function setBusy(v, mode = 'connecting') { busy = v; busyMode = mode; renderHome(); renderServers(); }
 
 function renderHome() {
   $('status').textContent = busy ? t('busy') : connected ? t('on') : t('off');
-  $('big').textContent = connected ? t('disconnect') : t('connect');
+  $('big').textContent = busy ? t(busyMode) : connected ? t('disconnect') : t('connect');
   $('big').classList.toggle('on', connected);
   $('orb').classList.toggle('busy', busy);
   $('orb').classList.toggle('live', connected && !busy);
@@ -88,8 +88,7 @@ function renderServers() {
       el('div', {}, el('span', { class: 'badge' }, s.cc || '--'), ' ', el('span', { class: 'host' }, s.host)),
       el('div', { class: 'stats' },
         el('span', { class: 'muted tiny' }, t(s.state) + (s.state === 'ok' ? ' · ' + s.ms + ' ms' : '')),
-        s.speedMbps > 0 ? el('span', { class: 'speed' }, fmtSpeed(s.speedMbps)) : '',
-        s.port && s.port !== 443 ? el('span', { class: 'muted tiny' }, 'TCP ' + s.port) : ''
+        s.speedMbps > 0 ? el('span', { class: 'speed' }, fmtSpeed(s.speedMbps)) : ''
       )),
     s.state === 'ok' ? el('button', { class: 'btn small-btn', onclick: () => { show('home'); go(s); } }, t('connect')) : '')));
   $('test-all').textContent = testing ? t('refreshing') : t('testall');
@@ -150,7 +149,7 @@ async function best() {
 }
 async function go(srv) {
   if (busy) return;
-  setBusy(true);
+  setBusy(true, 'connecting');
   try {
     if (!srv) { srv = await best(); if (!srv) { toast(t('nook')); return; } }
     S.last = { ...srv }; save(); log('connect ' + srv.host + ':' + (srv.port || 443));
@@ -163,7 +162,7 @@ async function go(srv) {
 $('big').addEventListener('click', async () => {
   if (busy) return;
   if (connected) {
-    setBusy(true); await window.api.disconnect(); connected = false; setBusy(false); log('disconnected');
+    setBusy(true, 'disconnecting'); await window.api.disconnect(); connected = false; setBusy(false); log('disconnected');
   } else go(S.last);
 });
 $('free').addEventListener('click', async () => { if (busy) return; const s = await best(); if (s) go(s); else toast(t('nook')); });
@@ -185,6 +184,30 @@ $('reconnect-attempts').addEventListener('change', (e) => { const n = Math.max(1
 document.querySelectorAll('input[name="close-behavior"]').forEach((r) => r.addEventListener('change', (e) => { S.closeBehavior = e.target.value; save(); toast(t('saved')); }));
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
 
+const closeModal = $('close-modal');
+const closeMessage = $('close-modal-message');
+function openCloseModal(data) {
+  const fa = S.lang === 'fa';
+  closeMessage.textContent = data?.connected ? t('closeConnected') : t('closeOffline');
+  $('close-keep').textContent = t('keepClose');
+  $('close-quit').textContent = t('quitClose');
+  $('close-cancel').textContent = t('cancelClose');
+  closeModal.hidden = false;
+  closeModal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => $('close-keep').focus(), 0);
+}
+async function closeChoice(choice) {
+  const remember = $('remember-close').checked;
+  closeModal.hidden = true;
+  closeModal.setAttribute('aria-hidden', 'true');
+  $('remember-close').checked = false;
+  await window.api.closeChoice(choice, remember);
+}
+$('close-keep').addEventListener('click', () => closeChoice('keep'));
+$('close-quit').addEventListener('click', () => closeChoice('quit'));
+$('close-cancel').addEventListener('click', () => closeChoice('cancel'));
+window.api.onCloseRequest(openCloseModal);
+
 window.api.onEvent((ev) => {
   if (!ev) return;
   if (ev.type === 'connected' || ev.type === 'reconnected') {
@@ -194,10 +217,10 @@ window.api.onEvent((ev) => {
   } else if (ev.type === 'connectionLost') {
     connected = false; busy = true; renderHome(); toast(t('connectionLost')); log('connection lost');
   } else if (ev.type === 'reconnecting') {
-    connected = false; busy = true; renderHome();
+    connected = false; busy = true; busyMode = 'reconnectingButton'; renderHome();
     $('status').textContent = `${t('reconnecting')} ${t('reconnectAttempt')} ${ev.attempt} ${t('of')} ${ev.attempts}`;
   } else if (ev.type === 'switchingServer') {
-    connected = false; busy = true; renderHome(); $('status').textContent = t('switching'); toast(t('failover'));
+    connected = false; busy = true; busyMode = 'reconnectingButton'; renderHome(); $('status').textContent = t('switching'); toast(t('failover'));
   } else if (ev.type === 'reconnectFailed') {
     connected = false; busy = false; renderHome(); toast(t('reconnectFailed')); log('reconnect failed');
   } else if (ev.type === 'status') {

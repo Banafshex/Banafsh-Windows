@@ -113,6 +113,22 @@
   </section>
 </main>
 <div id="toast" hidden></div>
+<div id="close-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">
+    <div class="modal-icon">×</div>
+    <h2 id="close-modal-title" data-t="closeModalTitle"></h2>
+    <p id="close-modal-message" class="modal-message"></p>
+    <p class="modal-detail" data-t="closeModalDetail"></p>
+    <label class="remember"><input id="remember-close" type="checkbox"><span class="check"></span><span data-t="dontAsk"></span></label>
+    <div class="modal-actions">
+      <button id="close-keep" class="btn full"></button>
+      <button id="close-quit" class="btn ghost full"></button>
+      <button id="close-cancel" class="modal-cancel"></button>
+    </div>
+  </section>
+</div>
+
 <nav>
   <button data-tab="home" data-t="home"></button>
   <button data-tab="servers" data-t="servers"></button>
