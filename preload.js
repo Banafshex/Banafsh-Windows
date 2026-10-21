@@ -6,6 +6,5 @@ contextBridge.exposeInMainWorld('api', {
   disconnect: () => i.invoke('vpn:disconnect'),
   status: () => i.invoke('vpn:status'),
   get: () => i.invoke('settings:get'),
-  set: (s) => i.invoke('settings:set', s),
-  open: (u) => i.invoke('open', u)
+  set: (s) => i.invoke('settings:set', s)
 });

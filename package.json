@@ -1,9 +1,9 @@
 {
   "name": "banafsh-windows",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Banafsh-sstp for Windows",
   "main": "main.js",
-  "author": "ARASH-BANAFSHX",
+  "author": "BANAFSHX",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -17,10 +17,11 @@
     "appId": "com.banafshx.banafsh",
     "productName": "Banafsh-sstp",
     "directories": { "output": "dist" },
-    "files": ["main.js", "preload.js", "renderer/**"],
+    "files": ["main.js", "preload.js", "renderer/**", "build/icon.png"],
     "win": {
       "target": [{ "target": "portable", "arch": ["x64"] }],
-      "requestedExecutionLevel": "requireAdministrator",
+      "requestedExecutionLevel": "asInvoker",
+      "icon": "build/icon.ico",
       "artifactName": "Banafsh-sstp-${version}-portable.exe"
     }
   }

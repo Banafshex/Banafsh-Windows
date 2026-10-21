@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
@@ -93,7 +93,6 @@ ipcMain.handle('servers:load', async () => {
 ipcMain.handle('servers:test', (_, host) => (HOST_RE.test(host) ? tcp(host) : -1));
 ipcMain.handle('settings:get', () => loadSettings());
 ipcMain.handle('settings:set', (_, s) => { saveSettings(s); return true; });
-ipcMain.handle('open', (_, u) => { if (typeof u === 'string' && u.startsWith('https://t.me/')) shell.openExternal(u); });
 
 ipcMain.handle('vpn:connect', async (_, { host, user, pass, sites }) => {
   if (!HOST_RE.test(host)) return { ok: false, error: 'bad host' };
@@ -120,14 +119,38 @@ ipcMain.handle('vpn:status', async () => {
   return c;
 });
 
-if (!app.requestSingleInstanceLock()) app.quit();
-app.whenReady().then(() => {
-  const win = new BrowserWindow({
+const logErr = (e) => { try { fs.appendFileSync(path.join(dataDir, 'banafsh-error.log'), new Date().toISOString() + ' ' + ((e && e.stack) || e) + '\n'); } catch {} };
+process.on('uncaughtException', (e) => { logErr(e); try { dialog.showErrorBox('Banafsh-sstp', String((e && e.message) || e)); } catch {} });
+process.on('unhandledRejection', logErr);
+
+// Admin rights are needed for the "sites without VPN" routes. If we are not elevated, relaunch ourselves with the Windows UAC prompt.
+const isAdmin = async () => (await run('whoami', ['/groups'])).out.includes('S-1-16-12288');
+function relaunchAsAdmin() {
+  const exe = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+  const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
+  const extra = app.isPackaged ? '' : ' -ArgumentList ' + q(app.getAppPath());
+  return ps(`Start-Process -FilePath ${q(exe)}${extra} -Verb RunAs`);
+}
+let win;
+function createWindow() {
+  win = new BrowserWindow({
     width: 400, height: 720, useContentSize: true, resizable: false, maximizable: false,
-    backgroundColor: '#17131f', title: 'Banafsh-sstp',
+    backgroundColor: '#17131f', title: 'Banafsh-sstp', icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   win.setMenu(null);
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+}
+app.whenReady().then(async () => {
+  try {
+    if (!(await isAdmin())) {
+      const r = await relaunchAsAdmin();
+      if (r.code) dialog.showErrorBox('Banafsh-sstp', 'برای کار کردن برنامه اجازه‌ی Administrator لازمه.\nThis app needs Administrator permission.');
+      app.quit(); return;
+    }
+    if (!app.requestSingleInstanceLock()) { app.quit(); return; }
+    app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
+    createWindow();
+  } catch (e) { logErr(e); dialog.showErrorBox('Banafsh-sstp', String((e && e.message) || e)); app.quit(); }
 });
 app.on('window-all-closed', async () => { await disconnectAll(); app.quit(); });

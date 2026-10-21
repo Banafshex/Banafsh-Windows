@@ -3,13 +3,13 @@ const T = {
     connect:'Connect', disconnect:'Disconnect', change:'Change', free:'Pick a free server', none:'No server selected',
     stitle:'Free servers', snote:'Auto-tested; broken ones go last', ok:'Online', bad:'Failed', wait:'Testing',
     btitle:'Sites without VPN', bnote:'These sites open directly, without VPN, while connected', add:'Add', ph:'e.g. site.ir',
-    sub:'Common subdomains (www, pay, api...) are added automatically', lang:'Language', about:'About', tg:'Telegram channel', log:'Log',
+    sub:'Common subdomains (www, pay, api...) are added automatically', lang:'Language', about:'About', log:'Log',
     inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list' },
   fa: { home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
     connect:'Connect', disconnect:'Disconnect', change:'تغییر', free:'انتخاب سرور رایگان', none:'سروری انتخاب نشده',
     stitle:'سرورهای رایگان', snote:'تست خودکار؛ خراب‌ها آخر لیست‌ان', ok:'آنلاین', bad:'خراب', wait:'در حال تست',
     btitle:'سایت‌های بدون VPN', bnote:'این سایت‌ها موقع اتصال مستقیم و بدون VPN باز می‌شن', add:'افزودن', ph:'مثلا site.ir',
-    sub:'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شن', lang:'زبان', about:'درباره', tg:'کانال تلگرام', log:'گزارش (Log)',
+    sub:'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شن', lang:'زبان', about:'درباره', log:'گزارش (Log)',
     inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد' }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
@@ -40,6 +40,8 @@ function renderHome() {
   $('status').textContent = busy ? t('busy') : connected ? t('on') : t('off');
   $('big').textContent = connected ? t('disconnect') : t('connect');
   $('big').classList.toggle('on', connected);
+  $('orb').classList.toggle('busy', busy);
+  $('orb').classList.toggle('live', connected && !busy);
   $('cc').textContent = (S.last && S.last.cc) || '--';
   $('addr').textContent = S.last ? S.last.host : t('none');
 }
@@ -114,7 +116,6 @@ $('add').addEventListener('click', () => {
 $('site-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('add').click(); });
 $('l-en').addEventListener('click', () => { S.lang = 'en'; save(); applyLang(); });
 $('l-fa').addEventListener('click', () => { S.lang = 'fa'; save(); applyLang(); });
-$('tg').addEventListener('click', () => window.api.open('https://t.me/Banafsh_sstp'));
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
 
 (async () => {

@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'">
 <title>Banafsh-sstp</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,10 @@
   <section id="s-home" class="screen">
     <div class="center">
       <div id="status" class="muted big-text"></div>
-      <button id="big" class="big" aria-label="Connect"></button>
+      <div id="orb" class="orb">
+        <span class="wave w1"></span><span class="wave w2"></span><span class="spin"></span>
+        <button id="big" class="big" aria-label="Connect"></button>
+      </div>
     </div>
     <div class="card">
       <span id="cc" class="badge">--</span>
@@ -47,9 +50,8 @@
     </div>
     <h2 data-t="about"></h2>
     <div class="card col">
-      <div>Banafsh-sstp 0.1.0</div>
-      <div class="muted small">ARASH-BANAFSHX</div>
-      <button id="tg" class="btn ghost" data-t="tg"></button>
+      <div>Banafsh-sstp 0.1.1</div>
+      <div class="muted small">BANAFSHX</div>
     </div>
     <h2 data-t="log"></h2>
     <pre id="log" dir="ltr"></pre>
