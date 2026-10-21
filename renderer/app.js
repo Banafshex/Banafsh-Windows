@@ -15,7 +15,7 @@ const T = {
     inv:'Invalid address', nook:'No working server found', fail:'Connection failed', rec:'Reconnect to apply the change', ldfail:'Could not load the server list',
     refreshing:'Testing servers...', saved:'Saved', reconnectAttempt:'Attempt', of:'of', connectedTo:'Connected to',
     connectionLost:'Connection lost. Reconnecting...', failover:'Current server is not responding. Trying another healthy server...',
-    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.8'
+    reconnectFailed:'Automatic reconnect failed.', closeModalTitle:'Close Banafsh', closeModalDetail:'Banafsh will remain next to the clock. You can reopen the window or manage the connection from there.', dontAsk:'Don\'t ask me again', keepClose:'Close window only', quitClose:'Disconnect and quit', cancelClose:'Cancel', closeConnected:'The VPN connection is active. You can keep it running and close only the window, or quit completely.', closeOffline:'You can keep Banafsh running in the system tray or quit the application completely.', version:'Banafsh 0.1.10'
   },
   fa: {
     home:'خانه', servers:'سرورها', bypass:'بدون VPN', settings:'تنظیمات', off:'وصل نیستی', busy:'در حال اتصال...', on:'وصل هستی',
@@ -33,7 +33,7 @@ const T = {
     inv:'آدرس درست نیست', nook:'سرور سالمی پیدا نشد', fail:'اتصال انجام نشد', rec:'برای اعمال تغییر یک‌بار قطع و وصل کن', ldfail:'لیست سرورها گرفته نشد',
     refreshing:'در حال تست سرورها...', saved:'ذخیره شد', reconnectAttempt:'تلاش', of:'از', connectedTo:'متصل به',
     connectionLost:'اتصال قطع شد؛ در حال اتصال مجدد...', failover:'سرور فعلی پاسخ نمی‌دهد؛ در حال امتحان کردن یک سرور سالم دیگر...',
-    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.8'
+    reconnectFailed:'اتصال مجدد خودکار ناموفق بود.', closeModalTitle:'بستن Banafsh', closeModalDetail:'Banafsh در کنار ساعت می‌ماند و از همان‌جا می‌توانی دوباره پنجره را باز کنی یا اتصال را مدیریت کنی.', dontAsk:'دیگر این سؤال را نپرس', keepClose:'فقط پنجره بسته شود', quitClose:'قطع اتصال و خروج', cancelClose:'انصراف', closeConnected:'اتصال VPN برقرار است. می‌توانی اتصال را نگه داری و فقط پنجره را ببندی، یا کاملاً خارج شوی.', closeOffline:'می‌توانی Banafsh را کنار ساعت نگه داری یا برنامه را کاملاً ببندی.', version:'Banafsh 0.1.10'
   }
 };
 const DEFAULT_SITES = ['aparat.com', 'digikala.com', 'divar.ir', 'snapp.ir', 'bmi.ir'];
@@ -67,7 +67,12 @@ function fmtSpeed(v) {
 }
 function sortServers(arr) {
   const order = { ok: 0, wait: 1, bad: 2 };
-  return [...arr].sort((a, b) => order[a.state] - order[b.state] || Number(b.speedMbps || 0) - Number(a.speedMbps || 0) || Number(a.ms > 0 ? a.ms : Infinity) - Number(b.ms > 0 ? b.ms : Infinity) || Number(a.ping || Infinity) - Number(b.ping || Infinity));
+  const pingOf = (s) => Number(s.ping) > 0 ? Number(s.ping) : Number(s.ms) > 0 ? Number(s.ms) : Infinity;
+  return [...arr].sort((a, b) =>
+    order[a.state] - order[b.state] ||
+    pingOf(a) - pingOf(b) ||
+    Number(b.speedMbps || 0) - Number(a.speedMbps || 0)
+  );
 }
 function setBusy(v, mode = 'connecting') { busy = v; busyMode = mode; renderHome(); renderServers(); }
 
@@ -87,8 +92,8 @@ function renderServers() {
     el('div', { class: 'info' },
       el('div', {}, el('span', { class: 'badge' }, s.cc || '--'), ' ', el('span', { class: 'host' }, s.host + ((Number(s.port) || 443) !== 443 ? ':' + s.port : ''))),
       el('div', { class: 'stats' },
-        el('span', { class: 'muted tiny' }, t(s.state) + (s.state === 'ok' ? ' · ' + s.ms + ' ms' : '')),
-        s.speedMbps > 0 ? el('span', { class: 'speed' }, fmtSpeed(s.speedMbps)) : ''
+        el('span', { class: 'stat-label ping' }, s.state === 'ok' ? `Ping: ${s.ms} ms` : 'Ping: --'),
+        s.speedMbps > 0 ? el('span', { class: 'stat-label speed' }, `Speed: ${fmtSpeed(s.speedMbps)}`) : el('span', { class: 'stat-label speed muted' }, 'Speed: --')
       )),
     s.state === 'ok' ? el('button', { class: 'btn small-btn', onclick: () => { show('home'); go(s); } }, t('connect')) : '')));
   $('test-all').textContent = testing ? t('refreshing') : t('testall');
@@ -186,21 +191,30 @@ $('startup-reconnect').addEventListener('change', (e) => { S.reconnectOnStart = 
 $('reconnect-delay').addEventListener('change', (e) => { const n = Math.max(5, Math.min(300, Number(e.target.value) || 10)); S.reconnectDelay = n; e.target.value = String(n); save(); toast(t('saved')); });
 $('reconnect-attempts').addEventListener('change', (e) => { const n = Math.max(1, Math.min(10, Number(e.target.value) || 3)); S.reconnectAttempts = n; e.target.value = String(n); save(); toast(t('saved')); });
 document.querySelectorAll('input[name="close-behavior"]').forEach((r) => r.addEventListener('change', (e) => { S.closeBehavior = e.target.value; save(); toast(t('saved')); }));
+$('win-min').addEventListener('click', () => window.api.minimize());
+$('win-close').addEventListener('click', () => window.api.closeWindow());
+
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
 
 const startup = $('startup');
 const startupBar = $('startup-bar');
 const startupPercent = $('startup-percent');
 const startupText = $('startup-text');
+const startupShownAt = Date.now();
+let startupHideScheduled = false;
 function applyStartup(ev) {
   if (!ev) return;
   const p = Math.max(0, Math.min(100, Number(ev.percent) || 0));
   startupBar.style.width = p + '%';
   startupPercent.textContent = p + '%';
   if (ev.text) startupText.textContent = ev.text;
-  if (p >= 100) {
-    setTimeout(() => startup.classList.add('hidden'), 180);
-    setTimeout(() => startup.remove(), 500);
+  if (p >= 100 && !startupHideScheduled) {
+    startupHideScheduled = true;
+    const wait = Math.max(0, 1200 - (Date.now() - startupShownAt));
+    setTimeout(() => {
+      startup.classList.add('hidden');
+      setTimeout(() => startup.remove(), 500);
+    }, wait + 180);
   }
 }
 window.api.onStartup(applyStartup);

@@ -77,7 +77,7 @@ function normServers(raw) {
     const host = String(s.host || s.hostname || s.address || s.ip || '').trim();
     if (!host || !HOST_RE.test(host) || seen.has(host)) continue;
     const port = Number(s.port) || 443;
-    if (port < 1 || port > 65535) continue;
+    if (port !== 443) continue;
     seen.add(host);
     const speed = Number(s.speed_mbps ?? s.speedMbps ?? s.speed ?? s.bandwidth_mbps ?? s.bandwidth ?? 0);
     const ping = Number(s.ping ?? s.latency ?? 0);
@@ -399,6 +399,15 @@ ipcMain.handle('window:close-choice', async (_, choice, remember) => {
   return false;
 });
 
+ipcMain.handle('window:minimize', () => {
+  if (win && !win.isDestroyed()) win.minimize();
+  return true;
+});
+ipcMain.handle('window:close', () => {
+  if (win && !win.isDestroyed()) win.close();
+  return true;
+});
+
 ipcMain.handle('servers:load', async () => {
   let last;
   for (const u of SERVER_URLS) {
@@ -465,6 +474,7 @@ async function performQuit() {
 function createWindow() {
   win = new BrowserWindow({
     width: 420, height: 760, useContentSize: true, resizable: false, maximizable: false,
+    frame: false,
     backgroundColor: '#17131f', title: 'Banafsh', icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
@@ -508,38 +518,39 @@ if (!gotSingleInstanceLock) {
 app.whenReady().then(async () => {
   try {
 
-    // Show the UI immediately. Permission and network checks happen behind
-    // the startup screen instead of blocking window creation for several seconds.
     createWindow();
-    startupProgress(8);
     createTray();
-    startupProgress(20);
+    startupProgress(8, 'در حال آماده‌سازی رابط برنامه...');
 
-    const adminPromise = isAdmin();
-    startupProgress(35);
-    const admin = await adminPromise;
+    const startupStartedAt = Date.now();
+    const hold = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    await hold(140);
+    startupProgress(20, 'در حال بررسی دسترسی‌های ویندوز...');
+    const admin = await isAdmin();
     if (!admin) {
-      startupProgress(55);
+      startupProgress(55, 'درخواست دسترسی Administrator...');
       const r = await relaunchAsAdmin();
       if (r.code) dialog.showErrorBox('Banafsh', 'برای کار کردن برنامه اجازه‌ی Administrator لازمه.\nThis app needs Administrator permission.');
       app.quit(); return;
     }
 
-    startupProgress(62);
+    startupProgress(48, 'در حال آماده‌سازی اتصال...');
+    await hold(140);
     startMonitor();
-    startupProgress(72);
+    startupProgress(62, 'در حال خواندن تنظیمات...');
     const s = loadSettings();
-    startupProgress(82);
-
-    // Read the actual VPN state once at startup, but do not block the window
-    // from being displayed while the UI is loading.
+    await hold(140);
+    startupProgress(76, 'در حال بررسی وضعیت اتصال...');
     const c = await isConnected();
     lastKnownConnected = c;
-    startupProgress(94);
+    startupProgress(92, 'تقریباً آماده است...');
     refreshTrayMenu();
 
     if (s.reconnectOnStart && s.last) setTimeout(() => connectSaved().catch(logErr), 1200);
-    startupProgress(100);
+
+    const elapsed = Date.now() - startupStartedAt;
+    if (elapsed < 1200) await hold(1200 - elapsed);
+    startupProgress(100, 'آماده شد');
     if (win && !win.isDestroyed()) win.webContents.send('startup:ready');
   } catch (e) { logErr(e); dialog.showErrorBox('Banafsh', String((e && e.message) || e)); app.quit(); }
 });

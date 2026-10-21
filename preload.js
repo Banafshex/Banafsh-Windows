@@ -15,5 +15,7 @@ contextBridge.exposeInMainWorld('api', {
   onTrayState: (fn) => i.on('tray:state', (_, data) => fn(data)),
   onStartup: (fn) => i.on('startup:progress', (_, data) => fn(data)),
   startupGet: () => i.invoke('startup:get'),
+  minimize: () => i.invoke('window:minimize'),
+  closeWindow: () => i.invoke('window:close'),
   onEvent: (fn) => i.on('vpn:event', (_, data) => fn(data))
 });

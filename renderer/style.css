@@ -1,3 +1,17 @@
+/* Custom Banafsh title bar */
+.titlebar{position:relative;z-index:20;height:40px;min-height:40px;display:flex;align-items:center;direction:ltr;background:rgba(24,17,35,.94);border-bottom:1px solid rgba(167,139,250,.18);box-shadow:0 2px 12px rgba(0,0,0,.16)}
+.titlebar-drag{height:100%;display:flex;align-items:center;gap:8px;flex:1;padding-left:12px;-webkit-app-region:drag;user-select:none}
+.titlebar-icon{width:20px;height:20px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(124,58,237,.25))}
+.titlebar-title{font-family:Segoe UI,Vazirmatn,Tahoma,sans-serif;font-size:12px;font-weight:600;color:#ddd4eb}
+.window-controls{height:100%;display:flex;align-items:stretch;-webkit-app-region:no-drag}
+.window-btn{width:48px;height:40px;border:0;border-radius:0;background:transparent;color:#a99dbc;font:400 19px/1 "Segoe UI",sans-serif;cursor:pointer;transition:background .14s ease,color .14s ease}
+.window-btn:hover{background:rgba(167,139,250,.12);color:#fff}
+.window-btn.close:hover{background:#8f3158;color:#fff}
+.window-btn:active{background:rgba(167,139,250,.20);transform:none}
+.stat-label{font-size:11px;line-height:1.5;direction:ltr;white-space:nowrap}
+.stat-label.ping{color:#c8bdd8}
+.stat-label.speed{font-weight:700;color:#67e8f9}
+
 @font-face{font-family:Vazirmatn;font-weight:400;src:url("fonts/vazirmatn_regular.ttf") format("truetype")}
 @font-face{font-family:Vazirmatn;font-weight:500;src:url("fonts/vazirmatn_medium.ttf") format("truetype")}
 @font-face{font-family:Vazirmatn;font-weight:700;src:url("fonts/vazirmatn_bold.ttf") format("truetype")}

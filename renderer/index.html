@@ -7,6 +7,16 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<header class="titlebar" aria-label="Banafsh window controls">
+  <div class="titlebar-drag">
+    <img src="../build/icon.png" alt="" class="titlebar-icon">
+    <span class="titlebar-title">Banafsh</span>
+  </div>
+  <div class="window-controls">
+    <button id="win-min" class="window-btn minimize" type="button" aria-label="Minimize">−</button>
+    <button id="win-close" class="window-btn close" type="button" aria-label="Close">×</button>
+  </div>
+</header>
 <div id="startup" class="startup-overlay" aria-live="polite">
   <div class="startup-card">
     <img src="../build/icon.png" alt="" class="startup-icon">
