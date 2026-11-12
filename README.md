@@ -1,54 +1,64 @@
-# Banafsh
+# Banafsh for Windows (بنفش ویندوز)
 
-Windows desktop client for Banafsh.
+کلاینت دسکتاپ رایگان و متن‌باز **L2TP/IPsec** و **SSTP** برای ویندوز ۱۰ و ۱۱ — هماهنگ و سازگار با نسخه‌ی اندروید [Banafsh-sstp](https://github.com/Banafshex/Banafsh-sstp).
 
-## 0.1.13 changes
-- Welcome window: replaced the banking tip with a security note (no sensitive logins such as banking, volunteer-run servers, honest note about server and project logs).
+Free, open-source **L2TP/IPsec** & **SSTP** VPN client for Windows 10/11, built to pair seamlessly with [Banafsh on Android](https://github.com/Banafshex/Banafsh-sstp).
 
-## 0.1.12 changes
-- Added a Welcome window (same style as the close dialog) with a short guide, features and a banking note. It opens on first launch and any time from Settings > Guide.
-- The build now produces two files: `Banafsh-<version>-portable.exe` (no install) and `Banafsh-<version>-setup.exe` (per-user installer with Start menu and desktop shortcuts).
+---
 
-## 0.1.11 changes
-- Settings changed by the app itself (failover server, remembered close choice) are pushed to the window, so a later save can no longer overwrite them.
-- Tray Connect/Disconnect now checks the live connection state instead of a cached one.
-- Fixed the elevated relaunch race: the single-instance lock is released before the Administrator copy starts, and the non-admin copy exits without touching the VPN.
-- Tray icon is now 32 px; removed the unused tray popup files.
+## امکانات نسخه ۰.۲.۰ (What's New in 0.2.0)
 
-## 0.1.10 changes
-- Replaced the native Windows title bar with a themed Banafsh title bar and custom minimize/close controls.
-- Startup progress now remains visible briefly instead of flashing away immediately on fast systems.
-- Server list is restricted to port 443 only.
-- Server ordering now prioritizes ping first, then published bandwidth/speed.
-- Server cards explicitly label `Ping` and `Speed`.
+- **دو سرویس اتصال (`L2TP/IPsec` و `SSTP`)**
+  - انتخاب مستقیم سرویس از صفحه‌ی اصلی، تنظیمات یا منوی کنار ساعت (System Tray).
+  - تنظیم خودکار سرویس‌های `IKEEXT` / `PolicyAgent` و قانون `AssumeUDPEncapsulationContextOnSendRule` برای سرورهای L2TP پشت NAT، و پشتیبانی کامل از همه‌ی پورت‌های SSTP در ویندوز (`host:port`).
+  - بررسی هوشمند سازگاری سرور انتخاب‌شده هنگام تعویض سرویس (`verifyServerForProtocol`).
+- **لیست سرورهای تفکیک‌شده بر اساس کشور + کیفیت و تست واقعی**
+  - دریافت خودکار لیست سرورهای رایگان از مخزن بنفش با آدرس پشتیبان (`jsDelivr`) و حذف خودکار سرورهای `RU`.
+  - نمایش کشورها با پرچم برداری شفاف (SVG) و تعداد سرورهای هر کشور.
+  - تست واقعی پروتکل از اینترنت کاربر: پکت واقعی `IKEv1 Main Mode` روی UDP 500 برای L2TP و هندشیک واقعی `TLS + SSTP_DUPLEX_POST` برای SSTP.
+  - نشانگر کیفیت سرور (`خوب` / `متوسط` / `بد` / `نامشخص`) بر اساس سهم پهنای باند هر کاربر، نمایش «سرور فعلی»، و مرتب‌سازی خودکار سرورهای سالم در صدر لیست.
+- **ارسال و دریافت سرور با QR رمزنگاری‌شده (سازگار با اندروید)**
+  - رمزنگاری `AES-256-GCM` با قالب `BNF1` (کاملاً سازگار با `QrShare` در نسخه‌ی اندروید بنفش).
+  - ارسال سرور به گوشی با نمایش QR، ذخیره تصویر SVG یا کپی کد متنی.
+  - دریافت سرور با اسکن وب‌کم، انتخاب یا Paste تصویر QR (`Ctrl+V`)، و یا وارد کردن کد رمزنگاری‌شده.
+- **نمایش سرعت زنده و وضعیت شبکه**
+  - نمایش زنده‌ی سرعت **دانلود** و **آپلود** (`KB/s` / `MB/s`) و آدرس IP تونل هنگام اتصال.
+  - تشخیص قطع بودن اینترنت (`به اینترنت وصل نیستید`) و اتصال خودکار به‌محض بازگشت اینترنت، به‌همراه اتصال مجدد خودکار و جایگزینی سرور خراب (Failover).
+- **سایت‌های ایرانی و دامنه‌های انتخابی بدون VPN (`lib/bypass.js`, `data/iran_ranges.txt`)**
+  - سوییچ «سایت‌های ایرانی بدون VPN» در صفحه‌ی اصلی و تب «بدون VPN» برای مسیریابی مستقیم تمام بازه‌های آی‌پی ایران (`iran_ranges.txt` از رجیستری RIPE، با بروزرسانی خودکار هفتگی و نسخه‌ی آفلاین داخلی).
+  - لیست سایت‌ها، آی‌پی‌ها و بازه‌های CIDR دلخواه بدون VPN (به همراه تشخیص خودکار زیردامنه‌های رایج `www`, `pay`, `api`, ...).
+  - اعمال سریع مسیرها در حافظه‌ی موقت ویندوز (`store=active`) و پاک‌سازی کامل هنگام قطع اتصال.
+- **تم تاریک بنفش + تم روشن شیشه‌ای (Dark & Light Glass)**
+  - قابلیت انتخاب بین تم **تاریک** (با انیمیشن شبکه‌ی زنده)، **روشن شیشه‌ای (Light Glass)** و **سیستم**، به‌همراه دکمه‌ی تغییر سریع تم در نوار بالا و پشتیبانی کامل دو زبانه (فارسی RTL / انگلیسی LTR).
+- **پروفایل‌ها، سرور دستی، آپدیت درون‌برنامه‌ای و اعلان خبرها**
+  - ورود دستی سرور (`Host`, `Port`, `Username`, `Password`, `L2TP PSK`) و ذخیره/بارگذاری پروفایل‌ها + ورود و خروج فایل JSON (سازگار با اندروید).
+  - بررسی و دانلود درون‌برنامه‌ای نسخه‌ی جدید از GitHub Releases (تشخیص خودکار نسخه‌ی نصبی `setup` و همراه `portable`) و نمایش اعلان‌های توسعه‌دهنده (`news.json`).
+  - مشاهده، کپی و ذخیره‌ی گزارش فنی اتصال (`Log`)، پشتیبانی از HTTP Proxy برای SSTP و DNS سفارشی روی تونل.
 
-## 0.1.9 changes
-- Renamed the Windows product/UI to `Banafsh`.
-- Replaced the application, window and tray icon with the supplied shield/lock icon.
-- Added a persistent Windows system tray with Open, Connect/Disconnect and Quit actions.
-- Added single-click and double-click tray opening.
-- Closing the window now asks whether to keep Banafsh in the tray or quit, even when the VPN is disconnected; the choice can be remembered.
-- Added close-behavior settings: Ask, Keep in tray, or Disconnect and quit.
-- Added automatic reconnect with configurable attempts and delay, including healthy-server failover.
-- Reconnect UI now reports attempts, switching servers, and failure states.
-- Kept reconnect-on-start as an optional setting and disabled it by default.
-- Server testing is lazy: the list is downloaded during startup, while the full automatic health test runs when the Server list is opened, reducing startup work.
-- Server sorting is Healthy first, then lower measured ping, then higher published Mbps; failed servers go last.
-- Server cards show published Mbps beside ping.
-- Added a `Test all` button.
-- Added a collapsed Advanced > Log section.
-- Added hover/press depth and motion to buttons, navigation, settings and server rows.
-- Preserved the existing no-VPN site routing behavior.
+---
 
-## Build
+## اجرا و ساخت (Development & Build)
+
 ```bash
+# نصب وابستگی‌های توسعه
 npm install
+
+# اجرای تست‌های خودکار پروتکل، رمزنگاری QR و لیست سرورها
+npm test
+
+# اجرای برنامه در محیط توسعه
+npm start
+
+# ساخت خروجی ویندوز (setup.exe و portable.exe در پوشه dist/)
 npm run dist
 ```
 
-- Keeps only port 443 servers in the list because Banafsh uses Windows SSTP on the standard SSTP/HTTPS port.
-- Prevents intentional disconnects during server switching from triggering an extra reconnect.
-- Merges settings updates so remembered close behavior and failover server choices are not overwritten by stale renderer state.
-- Startup progress state is retained until the renderer is ready, so a fast 100% event cannot get lost.
-- Reconnect can be cancelled from the main connection button.
-- Uses `rasdial` for periodic connection-state checks instead of PowerShell.
+خروجی ساخت شامل دو فایل خواهد بود:
+- `Banafsh-<version>-setup.exe` — نسخه‌ی نصبی به همراه میانبر دسکتاپ و منوی Start
+- `Banafsh-<version>-portable.exe` — نسخه‌ی بدون نیاز به نصب (Portable)
+
+---
+
+## کانال تلگرام و ارتباط
+- Telegram: [@Banafsh_sstp](https://t.me/Banafsh_sstp)
+- Android Repository: [Banafshex/Banafsh-sstp](https://github.com/Banafshex/Banafsh-sstp)

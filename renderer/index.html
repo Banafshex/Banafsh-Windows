@@ -1,22 +1,66 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:">
 <title>Banafsh</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="titlebar" aria-label="Banafsh window controls">
-  <div class="titlebar-drag">
-    <img src="../build/icon.png" alt="" class="titlebar-icon">
-    <span class="titlebar-title">Banafsh</span>
+<!-- Background layers: ambient orbs, connected glow, and live constellation canvas -->
+<div class="bg-ambient" aria-hidden="true">
+  <span class="orb-blob blob-violet"></span>
+  <span class="orb-blob blob-aqua"></span>
+  <div id="bg-glow" class="bg-glow"></div>
+  <canvas id="net-canvas"></canvas>
+</div>
+
+<!-- Custom Windows Frameless Titlebar + Brand Toolbar -->
+<header class="titlebar" aria-label="Banafsh window header">
+  <div class="titlebar-brand">
+    <div class="brand-badge">
+      <img src="../build/icon.png" alt="" class="brand-icon">
+    </div>
+    <span id="brand-name" class="brand-title">بنفش</span>
+    <span class="brand-vpn">VPN</span>
   </div>
-  <div class="window-controls">
-    <button id="win-min" class="window-btn minimize" type="button" aria-label="Minimize">−</button>
-    <button id="win-close" class="window-btn close" type="button" aria-label="Close">×</button>
+
+  <div class="titlebar-actions">
+    <button id="btn-theme-quick" class="icon-btn" type="button" title="تغییر تم" aria-label="Toggle theme">
+      <svg id="ico-theme" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+      </svg>
+    </button>
+    <div class="menu-wrap">
+      <button id="btn-menu" class="icon-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <circle cx="12" cy="5" r="1.9"></circle>
+          <circle cx="12" cy="12" r="1.9"></circle>
+          <circle cx="12" cy="19" r="1.9"></circle>
+        </svg>
+      </button>
+      <div id="top-menu" class="dropdown-menu" hidden role="menu">
+        <button type="button" data-menu="manual" role="menuitem"><span data-t="menuManual"></span></button>
+        <button type="button" data-menu="qr-send" role="menuitem"><span data-t="menuSendQr"></span></button>
+        <button type="button" data-menu="qr-receive" role="menuitem"><span data-t="menuReceiveQr"></span></button>
+        <div class="menu-sep"></div>
+        <button type="button" data-menu="profiles" role="menuitem"><span data-t="menuProfiles"></span></button>
+        <button type="button" data-menu="update" role="menuitem"><span data-t="menuCheckUpdate"></span></button>
+        <button type="button" data-menu="log" role="menuitem"><span data-t="logTitle"></span></button>
+        <div class="menu-sep"></div>
+        <button type="button" data-menu="reset" class="danger-item" role="menuitem"><span data-t="menuReloadDefaults"></span></button>
+      </div>
+    </div>
+    <div class="win-sep"></div>
+    <div class="window-controls" dir="ltr">
+      <button id="win-min" class="window-btn minimize" type="button" aria-label="Minimize">−</button>
+      <button id="win-close" class="window-btn close" type="button" aria-label="Close">×</button>
+    </div>
   </div>
 </header>
+
+<!-- Startup Progress Overlay -->
 <div id="startup" class="startup-overlay" aria-live="polite">
   <div class="startup-card">
     <img src="../build/icon.png" alt="" class="startup-icon">
@@ -26,60 +70,269 @@
     <div id="startup-percent" class="startup-percent">0%</div>
   </div>
 </div>
-<main>
-  <section id="s-home" class="screen">
-    <div class="center">
-      <div id="status" class="muted big-text"></div>
+
+<!-- Main Content -->
+<main id="main-scroll">
+  <!-- HOME SCREEN -->
+  <section id="s-home" class="screen home-screen">
+    <!-- Optional Banner for pending update or developer news -->
+    <button id="home-banner" class="home-banner" type="button" hidden>
+      <span id="banner-dot" class="banner-dot"></span>
+      <span id="banner-text" class="banner-text"></span>
+      <span class="banner-arrow">‹</span>
+    </button>
+
+    <!-- Status Pill + Hint -->
+    <div class="status-header">
+      <div id="status-pill" class="status-pill">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="status" class="status-label"></span>
+      </div>
+      <p id="status-hint" class="status-hint"></p>
+      <span id="tunnel-ip" class="ip-pill" dir="ltr" hidden></span>
+    </div>
+
+    <!-- Energy Ring + Glass Connect Button -->
+    <div class="connect-stage">
       <div id="orb" class="orb">
-        <span class="wave w1"></span><span class="wave w2"></span><span class="spin"></span>
-        <button id="big" class="big" aria-label="Connect"></button>
+        <span class="wave w1"></span>
+        <span class="wave w2"></span>
+        <span id="ring" class="energy-ring"></span>
+        <button id="big" class="connect-disc" type="button" aria-label="Connect">
+          <svg class="power-icon" viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2v10"></path>
+            <path d="M18.4 6.6a9 9 0 1 1-12.77.04"></path>
+          </svg>
+          <span id="big-label" class="connect-label"></span>
+        </button>
       </div>
     </div>
-    <div class="card">
-      <span id="cc" class="badge">--</span>
-      <div id="addr" class="addr"></div>
-      <button id="change" class="btn ghost" data-t="change"></button>
+
+    <!-- Live Speed Panel (visible when connected; space preserved cleanly) -->
+    <div id="speed-panel" class="speed-panel" aria-live="off">
+      <div class="speed-col">
+        <div class="speed-val-row" dir="ltr">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="ico-down">
+            <path d="M12 4v14"></path><path d="m6 12 6 6 6-6"></path>
+          </svg>
+          <span id="speed-down" class="speed-val down">—</span>
+        </div>
+        <span class="speed-caption" data-t="speedDown"></span>
+      </div>
+      <span class="speed-divider"></span>
+      <div class="speed-col">
+        <div class="speed-val-row" dir="ltr">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="ico-up">
+            <path d="M12 20V6"></path><path d="m6 12 6-6 6 6"></path>
+          </svg>
+          <span id="speed-up" class="speed-val up">—</span>
+        </div>
+        <span class="speed-caption" data-t="speedUp"></span>
+      </div>
     </div>
-    <button id="free" class="btn full" data-t="free"></button>
+
+    <!-- Server Card (3/4) + Service Card (1/4) matching Banafsh-sstp Stage 3b -->
+    <div class="home-cards-row">
+      <div id="card-server" class="glass-card server-card" role="button" tabindex="0">
+        <div class="server-card-main">
+          <span id="server-card-caption" class="card-caption" data-t="serverAddress"></span>
+          <div class="server-addr-row">
+            <span id="home-flag" class="home-flag-slot"></span>
+            <span id="addr" class="server-addr-text" dir="ltr"></span>
+          </div>
+          <div id="home-meta" class="server-meta-row" hidden>
+            <span id="home-ping" class="mini-pill ping-pill" dir="ltr"></span>
+          </div>
+        </div>
+        <button id="btn-manual-edit" class="mini-icon-btn" type="button" title="ورود سرور دستی" aria-label="Edit server manually">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <button id="card-protocol" class="glass-card protocol-card" type="button">
+        <span class="card-caption" data-t="serviceLabel"></span>
+        <span id="home-proto" class="proto-badge-text" dir="ltr">L2TP</span>
+        <span class="proto-change-hint" data-t="change"></span>
+      </button>
+    </div>
+
+    <!-- Iranian Websites Without VPN Card (matching Banafsh-sstp Home card, without Apps) -->
+    <div class="glass-card nv-home-card">
+      <label class="nv-home-top">
+        <div class="nv-home-titles">
+          <div class="nv-title-line">
+            <strong data-t="nvIranTitle"></strong>
+            <span class="tag-pill nv-exp-pill" data-t="nvIranTag"></span>
+          </div>
+          <span class="nv-home-sub" data-t="nvIranSummary"></span>
+        </div>
+        <input id="home-iran-sites" type="checkbox">
+        <span class="switch"></span>
+      </label>
+      <div class="nv-home-foot">
+        <span id="home-custom-count" class="muted tiny"></span>
+        <button id="home-manage-sites" class="nv-link-btn" type="button" data-t="nvManageSites"></button>
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="home-quick-actions">
+      <button id="free" class="btn primary grow" type="button" data-t="chooseFree"></button>
+      <button id="auto-best" class="btn ghost" type="button" data-t="autoBest"></button>
+    </div>
   </section>
 
+  <!-- SERVERS SCREEN (Country List -> Country Servers with Quality & Real Probe) -->
   <section id="s-servers" class="screen" hidden>
-    <div class="section-head">
-      <div>
-        <h1 data-t="stitle"></h1>
-        <p class="muted small" data-t="snote"></p>
+    <div class="servers-header">
+      <div class="servers-title-row">
+        <button id="srv-back" class="icon-chip-btn" type="button" hidden aria-label="Back">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+        <div class="servers-heading-text">
+          <div class="heading-with-badge">
+            <h1 id="srv-title" data-t="stitle"></h1>
+            <button id="srv-proto-pill" class="proto-chip" type="button" dir="ltr">L2TP</button>
+          </div>
+          <p id="srv-note" class="muted small"></p>
+        </div>
       </div>
-      <button id="test-all" class="btn ghost refresh-btn" data-t="testall"></button>
+      <div class="servers-actions">
+        <button id="srv-reload" class="btn ghost small-btn" type="button" data-t="reloadList"></button>
+        <button id="test-all" class="btn ghost small-btn" type="button" data-t="testAgain" hidden></button>
+      </div>
     </div>
+
+    <div id="srv-progress-wrap" class="progress-track" hidden>
+      <div id="srv-progress-bar" class="progress-fill"></div>
+    </div>
+
+    <div id="quality-hint-box" class="hint-banner" data-t="qualityHint"></div>
+
     <div id="list" class="list"></div>
   </section>
 
+  <!-- BYPASS / WITHOUT VPN SCREEN (Iran IP Ranges + Custom Sites/IPs, NO Apps) -->
   <section id="s-bypass" class="screen" hidden>
     <h1 data-t="btitle"></h1>
-    <p class="muted small" data-t="bnote"></p>
-    <div class="row">
-      <input id="site-in" aria-label="site" dir="ltr">
-      <button id="add" class="btn" data-t="add"></button>
+    <p class="muted small bypass-intro" data-t="bnote"></p>
+
+    <!-- 1. All Iranian IPv4 Ranges (iran_ranges.txt) -->
+    <div class="setting-list">
+      <label class="setting">
+        <span class="setting-text">
+          <span class="nv-title-line">
+            <strong data-t="nvIranTitle"></strong>
+            <span class="tag-pill nv-exp-pill" data-t="nvIranTag"></span>
+          </span>
+          <small data-t="nvIranDetail"></small>
+        </span>
+        <input id="bp-iran-sites" type="checkbox">
+        <span class="switch"></span>
+      </label>
+      <div class="nv-range-bar">
+        <span id="iran-ranges-count" class="muted tiny"></span>
+        <button id="btn-refresh-iran" class="btn ghost small-btn" type="button" data-t="nvRefreshIran"></button>
+      </div>
     </div>
-    <p class="muted tiny" data-t="sub"></p>
-    <div id="sites" class="list"></div>
+
+    <!-- 2. Custom Websites & IP/CIDR Addresses Without VPN -->
+    <h2 data-t="nvCustomHeading"></h2>
+    <div class="setting-list">
+      <label class="setting">
+        <span class="setting-text">
+          <strong data-t="nvCustomToggle"></strong>
+          <small data-t="nvCustomToggleNote"></small>
+        </span>
+        <input id="bp-custom-sites" type="checkbox">
+        <span class="switch"></span>
+      </label>
+    </div>
+
+    <div class="row bypass-input-row">
+      <input id="site-in" aria-label="site" dir="ltr" placeholder="site.ir / 185.143.232.0/22">
+      <button id="add-site" class="btn primary small-btn" type="button" data-t="add"></button>
+    </div>
+    <p class="muted tiny bypass-sub-note" data-t="sub"></p>
+
+    <div id="sites" class="list compact-sites-list"></div>
+
+    <div class="bypass-footer-row">
+      <button id="btn-reset-sites" class="btn ghost small-btn" type="button" data-t="nvResetSites"></button>
+    </div>
   </section>
 
+  <!-- SETTINGS SCREEN -->
   <section id="s-settings" class="screen" hidden>
     <h1 data-t="settings"></h1>
 
+    <!-- Appearance & Language -->
+    <h2 data-t="appearanceTitle"></h2>
+    <div class="setting-list">
+      <div class="setting-block">
+        <div class="setting-block-head">
+          <strong data-t="themeLabel"></strong>
+        </div>
+        <div class="seg-row">
+          <button id="theme-dark" class="seg-btn" type="button" data-t="themeDark"></button>
+          <button id="theme-light" class="seg-btn" type="button" data-t="themeLight"></button>
+          <button id="theme-system" class="seg-btn" type="button" data-t="themeSystem"></button>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block-head">
+          <strong data-t="lang"></strong>
+        </div>
+        <div class="seg-row">
+          <button id="l-fa" class="seg-btn" type="button">فارسی</button>
+          <button id="l-en" class="seg-btn" type="button">English</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection & Service -->
     <h2 data-t="reconnectTitle"></h2>
     <div class="setting-list">
+      <button id="set-open-proto" class="setting action-row" type="button">
+        <span class="setting-text">
+          <strong data-t="protocolTitle"></strong>
+          <small id="set-proto-summary"></small>
+        </span>
+        <span id="set-proto-badge" class="badge" dir="ltr">L2TP</span>
+      </button>
+
+      <button id="set-open-log" class="setting action-row" type="button">
+        <span class="setting-text">
+          <strong data-t="logTitle"></strong>
+          <small data-t="logSummary"></small>
+        </span>
+        <span class="row-chevron">‹</span>
+      </button>
+
       <label class="setting">
         <span class="setting-text"><strong data-t="autoReconnect"></strong><small data-t="autoReconnectNote"></small></span>
         <input id="auto-reconnect" type="checkbox">
         <span class="switch"></span>
       </label>
+
+      <label class="setting">
+        <span class="setting-text"><strong data-t="autoFailover"></strong><small data-t="autoFailoverNote"></small></span>
+        <input id="auto-failover" type="checkbox">
+        <span class="switch"></span>
+      </label>
+
       <label class="setting">
         <span class="setting-text"><strong data-t="startupReconnect"></strong><small data-t="startupReconnectNote"></small></span>
         <input id="startup-reconnect" type="checkbox">
         <span class="switch"></span>
       </label>
+
       <label class="setting select-setting">
         <span class="setting-text"><strong data-t="reconnectAttempts"></strong><small data-t="reconnectAttemptsNote"></small></span>
         <select id="reconnect-attempts" dir="ltr">
@@ -87,6 +340,7 @@
         </select>
         <span class="muted small" data-t="tries"></span>
       </label>
+
       <label class="setting select-setting">
         <span class="setting-text"><strong data-t="reconnectDelay"></strong></span>
         <select id="reconnect-delay" dir="ltr">
@@ -96,6 +350,7 @@
       </label>
     </div>
 
+    <!-- Close Behavior -->
     <h2 data-t="closeTitle"></h2>
     <div class="setting-list radio-list">
       <label class="setting radio-setting"><span class="setting-text"><strong data-t="closeAsk"></strong></span><input type="radio" name="close-behavior" value="ask"><span class="radio"></span></label>
@@ -111,45 +366,333 @@
       </div>
     </div>
 
-    <h2 data-t="lang"></h2>
-    <div class="row">
-      <button id="l-en" class="btn ghost grow">English</button>
-      <button id="l-fa" class="btn ghost grow">فارسی</button>
-    </div>
-
+    <!-- HTTP Proxy (SSTP) -->
     <details class="advanced">
-      <summary data-t="advanced"></summary>
-      <div class="advanced-body">
-        <pre id="log" dir="ltr"></pre>
+      <summary>HTTP Proxy <span class="muted tiny">(SSTP)</span></summary>
+      <div class="advanced-body setting-list">
+        <label class="setting compact">
+          <span class="setting-text"><strong data-t="proxyUse"></strong></span>
+          <input id="proxy-enabled" type="checkbox">
+          <span class="switch"></span>
+        </label>
+        <div class="form-grid">
+          <label class="field-label"><span data-t="proxyHost"></span><input id="proxy-host" dir="ltr" placeholder="127.0.0.1"></label>
+          <label class="field-label"><span data-t="proxyPort"></span><input id="proxy-port" type="number" dir="ltr" min="1" max="65535" placeholder="8080"></label>
+        </div>
+        <button id="save-proxy" class="btn ghost small-btn" type="button" data-t="save"></button>
       </div>
     </details>
 
-    <h2 data-t="about"></h2>
-    <div class="card col">
-      <div data-t="version"></div>
-      <div class="muted small">BANAFSHX</div>
-      <button id="open-guide" class="btn ghost" data-t="guide"></button>
+    <!-- Collapsible Advanced -->
+    <details class="advanced">
+      <summary data-t="advanced"></summary>
+      <div class="advanced-body setting-list">
+        <label class="setting compact">
+          <span class="setting-text"><strong data-t="customDnsUse"></strong><small data-t="customDnsNote"></small></span>
+          <input id="custom-dns-enabled" type="checkbox">
+          <span class="switch"></span>
+        </label>
+        <label class="field-label">
+          <span data-t="customDnsAddr"></span>
+          <input id="custom-dns" dir="ltr" placeholder="1.1.1.1">
+        </label>
+
+        <label class="setting compact">
+          <span class="setting-text"><strong data-t="l2tpNatTLabel"></strong><small data-t="l2tpNatTNote"></small></span>
+          <input id="l2tp-natt" type="checkbox">
+          <span class="switch"></span>
+        </label>
+
+        <label class="setting compact">
+          <span class="setting-text"><strong data-t="saveLogLabel"></strong></span>
+          <input id="save-log-file" type="checkbox">
+          <span class="switch"></span>
+        </label>
+
+        <div class="row">
+          <button id="btn-save-adv" class="btn ghost small-btn grow" type="button" data-t="save"></button>
+          <button id="btn-reveal-log" class="btn ghost small-btn grow" type="button" data-t="openLogFolder"></button>
+        </div>
+      </div>
+    </details>
+
+    <!-- About BANAFSHX -->
+    <h2>BANAFSHX</h2>
+    <div class="glass-card about-card">
+      <div class="about-top">
+        <img src="../build/icon.png" alt="" class="about-logo">
+        <div>
+          <strong id="version-label">Banafsh 0.2.0</strong>
+          <div class="muted small">BANAFSHX · Open Source (MIT)</div>
+        </div>
+      </div>
+      <div class="about-grid">
+        <button id="open-guide" class="btn ghost small-btn" type="button" data-t="guide"></button>
+        <button id="open-whatsnew" class="btn ghost small-btn" type="button" data-t="whatsNewBtn"></button>
+        <button id="btn-check-update-set" class="btn ghost small-btn" type="button" data-t="menuCheckUpdate"></button>
+        <button id="btn-telegram" class="btn ghost small-btn" type="button" data-t="telegramChannel"></button>
+      </div>
     </div>
   </section>
 </main>
-<div id="toast" hidden></div>
-<div id="welcome-modal" class="modal" hidden aria-hidden="true">
-  <div class="modal-backdrop"></div>
-  <section class="modal-card welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-    <button id="welcome-x" class="modal-x" type="button" aria-label="Close">×</button>
-    <img src="../build/icon.png" alt="" class="welcome-icon">
-    <h2 id="welcome-title" data-t="welcomeTitle"></h2>
-    <p class="modal-message" data-t="welcomeIntro"></p>
-    <h3 data-t="welcomeHow"></h3>
-    <ol class="guide-list">
-      <li data-t="w1"></li><li data-t="w2"></li><li data-t="w3"></li><li data-t="w4"></li><li data-t="w5"></li>
-    </ol>
-    <h3 data-t="welcomeFeatures"></h3>
-    <p class="modal-detail" data-t="welcomeFeaturesText"></p>
-    <div class="note"><strong data-t="bankTitle"></strong><p data-t="bankText"></p><p data-t="logText"></p></div>
-    <div class="modal-actions"><button id="welcome-start" class="btn full" data-t="welcomeStart"></button></div>
+
+<!-- Bottom Navigation Pill (4 Tabs: Home · Servers · No VPN · Settings) -->
+<nav class="bottom-nav" aria-label="Primary navigation">
+  <button type="button" data-tab="home" class="active">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span data-t="home"></span>
+  </button>
+  <button type="button" data-tab="servers">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+    <span data-t="servers"></span>
+  </button>
+  <button type="button" data-tab="bypass">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+    <span data-t="bypass"></span>
+  </button>
+  <button type="button" data-tab="settings">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <span data-t="settings"></span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div id="toast" hidden role="status" aria-live="polite"></div>
+
+<!-- ==================== GLASS MODALS ==================== -->
+
+<!-- 1. Service / Protocol Selector Modal -->
+<div id="protocol-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="protocol-modal"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="protocol-modal" aria-label="Close">×</button>
+    <div class="modal-badge-icon">⚡</div>
+    <h2 data-t="protocolTitle"></h2>
+    <div class="proto-options">
+      <button id="opt-l2tp" class="proto-option-card" type="button">
+        <div class="proto-opt-top">
+          <strong dir="ltr">L2TP/IPsec</strong>
+          <span class="proto-check" id="chk-l2tp">✓</span>
+        </div>
+        <p data-t="protoL2tpDesc"></p>
+      </button>
+      <button id="opt-sstp" class="proto-option-card" type="button">
+        <div class="proto-opt-top">
+          <strong dir="ltr">SSTP</strong>
+          <span class="proto-check" id="chk-sstp">✓</span>
+        </div>
+        <p data-t="protoSstpDesc"></p>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" type="button" data-close="protocol-modal" data-t="cancel"></button>
+    </div>
   </section>
 </div>
+
+<!-- 2. Manual Server Dialog -->
+<div id="manual-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="manual-modal"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="manual-modal" aria-label="Close">×</button>
+    <h2 data-t="manualServerTitle"></h2>
+    <div class="form-stack">
+      <label class="field-label"><span data-t="serverAddress"></span><input id="man-host" dir="ltr" placeholder="vpn.example.com"></label>
+      <div class="form-grid">
+        <label class="field-label"><span data-t="portLabelInput"></span><input id="man-port" type="number" dir="ltr" min="1" max="65535" value="443"></label>
+        <label class="field-label"><span data-t="pskLabel"></span><input id="man-psk" dir="ltr" placeholder="vpn"></label>
+      </div>
+      <div class="form-grid">
+        <label class="field-label"><span data-t="userLabel"></span><input id="man-user" dir="ltr" placeholder="vpn"></label>
+        <label class="field-label"><span data-t="passLabel"></span><input id="man-pass" type="password" dir="ltr" placeholder="vpn"></label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="man-save-connect" class="btn primary full" type="button" data-t="saveAndConnect"></button>
+      <button id="man-save" class="btn ghost full" type="button" data-t="save"></button>
+      <button class="modal-cancel" type="button" data-close="manual-modal" data-t="cancel"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 3. QR Send Server Modal -->
+<div id="qr-send-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="qr-send-modal"></div>
+  <section class="modal-card qr-modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="qr-send-modal" aria-label="Close">×</button>
+    <h2 data-t="qrSendTitle"></h2>
+    <p class="modal-detail center-text" data-t="qrSendHint"></p>
+    <div id="qr-svg-box" class="qr-white-frame"></div>
+    <div id="qr-send-server" class="qr-server-tag" dir="ltr"></div>
+    <p class="muted tiny center-text" data-t="qrSendNote"></p>
+    <div class="row qr-btn-row">
+      <button id="qr-copy-code" class="btn ghost small-btn grow" type="button" data-t="qrCopyCode"></button>
+      <button id="qr-save-img" class="btn ghost small-btn grow" type="button" data-t="qrSaveImg"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 4. QR Receive Server Modal (Camera + Image + Code) -->
+<div id="qr-scan-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="qr-scan-modal"></div>
+  <section class="modal-card qr-modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="qr-scan-modal" aria-label="Close">×</button>
+    <h2 data-t="qrReceiveTitle"></h2>
+    <p class="modal-detail center-text" data-t="qrReceiveHint"></p>
+
+    <div id="qr-cam-explain" class="qr-explain-box">
+      <p class="small" data-t="qrCamPermBody"></p>
+      <button id="qr-start-cam" class="btn primary full" type="button" data-t="qrStartCam"></button>
+    </div>
+
+    <div id="qr-cam-box" class="qr-camera-frame" hidden>
+      <video id="qr-video" playsinline muted></video>
+      <div class="scan-reticle"></div>
+    </div>
+    <div id="qr-scan-status" class="qr-scan-status" hidden></div>
+
+    <div class="qr-alt-divider"><span data-t="qrOrOtherWays"></span></div>
+
+    <div class="row">
+      <label class="btn ghost small-btn grow file-btn">
+        <span data-t="qrPickImage"></span>
+        <input id="qr-file-in" type="file" accept="image/*" hidden>
+      </label>
+    </div>
+    <div class="row qr-paste-row">
+      <input id="qr-code-in" dir="ltr" placeholder="کد رمزنگاری‌شده بنفش...">
+      <button id="qr-decode-btn" class="btn primary small-btn" type="button" data-t="qrApplyCode"></button>
+    </div>
+    <canvas id="qr-decode-canvas" hidden></canvas>
+  </section>
+</div>
+
+<!-- 5. Profiles Modal (Save / Load / Import / Export) -->
+<div id="profiles-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="profiles-modal"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="profiles-modal" aria-label="Close">×</button>
+    <h2 data-t="menuProfiles"></h2>
+    <div class="row">
+      <input id="profile-name-in" placeholder="">
+      <button id="btn-profile-save" class="btn primary small-btn" type="button" data-t="save"></button>
+    </div>
+    <div id="profiles-list" class="list compact-list"></div>
+    <div class="row">
+      <button id="btn-profile-import" class="btn ghost small-btn grow" type="button" data-t="importProfile"></button>
+      <button id="btn-profile-export" class="btn ghost small-btn grow" type="button" data-t="exportProfile"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 6. Update Modal -->
+<div id="update-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="update-modal"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="update-modal" aria-label="Close">×</button>
+    <div class="modal-badge-icon">⬆</div>
+    <h2 id="update-modal-title"></h2>
+    <pre id="update-notes" class="notes-box"></pre>
+    <div id="update-dl-box" hidden>
+      <div class="progress-track"><div id="update-dl-bar" class="progress-fill"></div></div>
+      <p id="update-dl-label" class="small center-text muted"></p>
+    </div>
+    <div class="modal-actions">
+      <button id="btn-update-now" class="btn primary full" type="button" data-t="updateNow"></button>
+      <button id="btn-update-page" class="btn ghost full" type="button" data-t="updateOpenPage" hidden></button>
+      <button id="btn-update-later" class="modal-cancel" type="button" data-t="later"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 7. News Modal -->
+<div id="news-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="news-modal"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="news-modal" aria-label="Close">×</button>
+    <div class="modal-badge-icon">🔔</div>
+    <h2 id="news-title"></h2>
+    <p id="news-body" class="modal-message preline"></p>
+    <div class="modal-actions">
+      <button id="btn-news-open" class="btn primary full" type="button" data-t="newsOpen" hidden></button>
+      <button id="btn-news-close" class="btn ghost full" type="button" data-t="close"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 8. Connection Log Modal -->
+<div id="log-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="log-modal"></div>
+  <section class="modal-card wide-card" role="dialog" aria-modal="true">
+    <button class="modal-x" type="button" data-close="log-modal" aria-label="Close">×</button>
+    <h2 data-t="logTitle"></h2>
+    <pre id="log" class="log-pre" dir="ltr"></pre>
+    <div class="row">
+      <button id="btn-copy-log" class="btn primary small-btn grow" type="button" data-t="copy"></button>
+      <button id="btn-clear-log" class="btn ghost small-btn grow" type="button" data-t="clear"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 9. Welcome / Guide / What's New Modal -->
+<div id="welcome-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close="welcome-modal"></div>
+  <section class="modal-card welcome-card" role="dialog" aria-modal="true">
+    <button id="welcome-x" class="modal-x" type="button" aria-label="Close">×</button>
+    <img src="../build/icon.png" alt="" class="welcome-icon">
+    <h2 id="welcome-heading" data-t="welcomeTitle"></h2>
+    <p class="modal-message" data-t="welcomeIntro"></p>
+
+    <div id="whats-new-section" class="whats-new-box">
+      <h3 data-t="whatsNewHeading"></h3>
+      <ul class="guide-list">
+        <li data-t="wn1"></li>
+        <li data-t="wn2"></li>
+        <li data-t="wn3"></li>
+        <li data-t="wn4"></li>
+      </ul>
+    </div>
+
+    <h3 data-t="welcomeHow"></h3>
+    <ol class="guide-list">
+      <li data-t="w1"></li>
+      <li data-t="w2"></li>
+      <li data-t="w3"></li>
+      <li data-t="w4"></li>
+    </ol>
+
+    <div class="note">
+      <strong data-t="bankTitle"></strong>
+      <p data-t="bankText"></p>
+      <p data-t="logText"></p>
+    </div>
+
+    <label id="welcome-dont-show-wrap" class="remember">
+      <input id="welcome-dont-show" type="checkbox">
+      <span class="check"></span>
+      <span data-t="dontShowAgain"></span>
+    </label>
+
+    <div class="modal-actions">
+      <button id="welcome-start" class="btn primary full" type="button" data-t="welcomeStart"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 10. Generic Glass Confirm Modal -->
+<div id="confirm-modal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <section class="modal-card" role="dialog" aria-modal="true">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-body" class="modal-message preline"></p>
+    <div class="modal-actions">
+      <button id="confirm-ok" class="btn primary full" type="button"></button>
+      <button id="confirm-cancel" class="btn ghost full" type="button"></button>
+    </div>
+  </section>
+</div>
+
+<!-- 11. Close Window Modal -->
 <div id="close-modal" class="modal" hidden aria-hidden="true">
   <div class="modal-backdrop"></div>
   <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">
@@ -159,19 +702,16 @@
     <p class="modal-detail" data-t="closeModalDetail"></p>
     <label class="remember"><input id="remember-close" type="checkbox"><span class="check"></span><span data-t="dontAsk"></span></label>
     <div class="modal-actions">
-      <button id="close-keep" class="btn full"></button>
-      <button id="close-quit" class="btn ghost full"></button>
-      <button id="close-cancel" class="modal-cancel"></button>
+      <button id="close-keep" class="btn primary full" type="button"></button>
+      <button id="close-quit" class="btn ghost full" type="button"></button>
+      <button id="close-cancel" class="modal-cancel" type="button"></button>
     </div>
   </section>
 </div>
 
-<nav>
-  <button data-tab="home" data-t="home"></button>
-  <button data-tab="servers" data-t="servers"></button>
-  <button data-tab="bypass" data-t="bypass"></button>
-  <button data-tab="settings" data-t="settings"></button>
-</nav>
+<script src="vendor/jsQR.js"></script>
+<script src="flags.js"></script>
+<script src="network.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
