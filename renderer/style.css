@@ -877,6 +877,7 @@ html[dir="ltr"] .row-chevron {
 }
 
 .nv-home-top {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1473,11 +1474,11 @@ html[dir="rtl"] #srv-back svg {
   transition: transform 0.2s ease;
 }
 
-.setting input[type="checkbox"]:checked + .switch {
+input[type="checkbox"]:checked + .switch {
   background: var(--accent-strong);
 }
 
-.setting input[type="checkbox"]:checked + .switch::after {
+input[type="checkbox"]:checked + .switch::after {
   transform: translateX(18px);
 }
 

@@ -221,28 +221,19 @@
       closeConnected: 'اتصال VPN برقرار است. می‌خواهید اتصال بماند و فقط پنجره بسته شود، یا کاملاً خارج شوید؟',
       closeOffline: 'می‌توانید بنفش را کنار ساعت نگه دارید یا کاملاً خارج شوید.',
 
-      // Bypass / Without VPN (Iran IP ranges + Custom sites, NO Apps)
-      btitle: 'اینترنت مستقیم (بدون VPN)',
-      bnote: 'آی‌پی‌های ایران و دامنه‌های انتخابی شما هنگام روشن بودن VPN مستقیم و بدون تونل باز می‌شوند.',
-      nvIranTitle: 'سایت‌های ایرانی بدون VPN',
-      nvIranTag: 'آزمایشی',
-      nvIranSummary: 'اگر مشکلی پیش آمد این سوییچ را خاموش کنید',
-      nvIranDetail: 'همه‌ی بازه‌های آی‌پی داخل ایران (RIPE) مستقیم باز می‌شوند',
+      // Bypass / Without VPN (Manual Custom Sites Only)
+      btitle: 'سایت‌های بدون VPN',
+      bnote: 'سایت‌ها و دامنه‌هایی که اینجا وارد کنید هنگام روشن بودن VPN مستقیم و بدون تونل باز می‌شوند.',
       nvManageSites: 'مدیریت سایت‌ها',
-      nvRefreshIran: 'بروزرسانی لیست ایران',
-      nvRangesCount: '{n} بازه‌ی آی‌پی ایران آماده است',
-      nvRangesUpdated: 'لیست آی‌پی‌های ایران بروزرسانی شد ({n} بازه)',
-      nvRangesFailed: 'بروزرسانی لیست آی‌پی‌های ایران ناموفق بود',
-      nvCustomHeading: 'سایت‌ها و آی‌پی‌های انتخابی بدون VPN',
       nvCustomToggle: 'مسیریابی مستقیم سایت‌های انتخابی',
-      nvCustomToggleNote: 'دامنه‌ها و آی‌پی‌های لیست زیر بدون VPN باز شوند',
-      nvCustomActiveCount: '{n} سایت انتخابی بدون VPN فعال است',
-      nvCustomDisabledNote: 'لیست سایت‌های انتخابی غیرفعال است',
+      nvCustomToggleNote: 'سایت‌های لیست زیر مستقیم و بدون VPN باز شوند',
+      nvCustomActiveCount: '{n} سایت بدون VPN فعال است',
+      nvCustomDisabledNote: 'سایت‌های بدون VPN غیرفعال است',
       add: 'افزودن',
-      sub: 'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شوند؛ آی‌پی و CIDR هم پذیرفته می‌شود.',
-      sitePh: 'مثلاً site.ir یا 185.143.232.0/22',
+      sub: 'زیردامنه‌های رایج (www، pay، api، ...) خودکار اضافه می‌شوند؛ آی‌پی هم پذیرفته می‌شود.',
+      sitePh: 'مثلاً site.ir',
       siteInv: 'آدرس دامنه یا آی‌پی معتبر نیست',
-      siteDup: 'این مورد قبلاً در لیست وجود دارد',
+      siteDup: 'این سایت قبلاً در لیست وجود دارد',
       nvSitesEmpty: 'هنوز سایتی در لیست نیست.',
       nvResetSites: 'بازگردانی سایت‌های پیش‌فرض',
       nvSitesResetDone: 'سایت‌های پیش‌فرض بازگردانی شدند',
@@ -253,14 +244,14 @@
       whatsNewTitleModal: 'تازه‌های نسخه‌ی {v}',
       welcomeIntro: 'کلاینت ساده و رایگان L2TP/IPsec و SSTP برای ویندوز، هماهنگ با نسخه‌ی اندروید بنفش.',
       whatsNewHeading: 'تازه‌ها و امکانات جدید',
-      wn1: 'دو سرویس اتصال: L2TP/IPsec (سریع‌تر) و SSTP (مشابه HTTPS) با تست واقعی هر پروتکل',
+      wn1: 'دو سرویس اتصال مجزا: L2TP/IPsec و SSTP با تست واقعی پروتکل و بدون تداخل آداپتور ویندوز',
       wn2: 'لیست سرورها به تفکیک کشورها با پرچم، پینگ واقعی و نشانگر کیفیت سرور',
-      wn3: 'سایت‌های ایرانی بدون VPN (تمام آی‌پی‌های ایران + دامنه‌های دلخواه) و اشتراک سرور با QR',
-      wn4: 'نمایش سرعت زنده دانلود/آپلود، تم تاریک و روشن شیشه‌ای، اعلان خبرها و آپدیت درون‌برنامه‌ای',
+      wn3: 'امکان افزودن دستی سایت‌های ایرانی برای گذر بدون VPN و اشتراک سرور با QR رمزنگاری‌شده',
+      wn4: 'نمایش سرعت زنده دانلود/آپلود، تم هماهنگ با سیستم (روشن شیشه‌ای و تاریک) و آپدیت درون‌برنامه‌ای',
       welcomeHow: 'چطور استفاده کنم؟',
       w1: 'سرویس دلخواه (L2TP یا SSTP) را انتخاب کنید و روی دکمه‌ی اتصال یا «انتخاب سرور رایگان» بزنید.',
       w2: 'در تب «سرورها»، کشور دلخواه را باز کنید تا سرورها از اینترنت خودتان تست و مرتب شوند.',
-      w3: 'در تب «بدون VPN» می‌توانید کل آی‌پی‌های ایران یا سایت‌های دلخواه را مستقیم باز کنید و از منوی ⋮ سرور را با QR به گوشی بفرستید.',
+      w3: 'در تب «بدون VPN» سایت‌هایی که می‌خواهید مستقیم باز شوند را اضافه کنید و از منوی ⋮ سرور را با QR به گوشی بفرستید.',
       w4: 'اگر اینترنت یا سرور قطع شود، بنفش هوشمندانه منتظر اینترنت می‌ماند و دوباره وصل می‌شود.',
       bankTitle: 'نکته‌ی امنیتی و لاگ‌ها',
       bankText: 'سرورهای رایگان توسط داوطلبان پروژه‌ی VPN Gate در دنیا راه‌اندازی شده‌اند، نه یک شرکت. لطفاً برای کارهای حساس مثل بانک یا حساب‌های مهم از سرورهای عمومی رایگان استفاده نکنید.',
@@ -479,25 +470,16 @@
       closeConnected: 'VPN is currently connected. Keep it running in the tray, or disconnect and quit?',
       closeOffline: 'Keep Banafsh in the system tray, or quit completely?',
 
-      btitle: 'Direct Internet (No VPN)',
-      bnote: 'Iranian IP ranges and your chosen websites open directly outside the VPN tunnel while connected.',
-      nvIranTitle: 'Iranian websites without VPN',
-      nvIranTag: 'Experimental',
-      nvIranSummary: 'If anything goes wrong, turn this switch off',
-      nvIranDetail: 'Routes all Iranian RIPE IPv4 ranges directly outside VPN',
+      btitle: 'Sites Without VPN',
+      bnote: 'Websites and domains you add here open directly outside the VPN tunnel while connected.',
       nvManageSites: 'Manage sites',
-      nvRefreshIran: 'Refresh Iran IPs',
-      nvRangesCount: '{n} Iranian IP blocks ready',
-      nvRangesUpdated: 'Iranian IP list updated ({n} blocks)',
-      nvRangesFailed: 'Could not refresh Iranian IP list',
-      nvCustomHeading: 'Custom Websites & IPs Without VPN',
-      nvCustomToggle: 'Direct routing for custom list',
-      nvCustomToggleNote: 'Open the domains and IPs below directly without VPN',
-      nvCustomActiveCount: '{n} custom direct sites active',
-      nvCustomDisabledNote: 'Custom sites list is turned off',
+      nvCustomToggle: 'Direct routing for listed sites',
+      nvCustomToggleNote: 'Open the websites below directly without VPN',
+      nvCustomActiveCount: '{n} direct sites active',
+      nvCustomDisabledNote: 'Sites without VPN is turned off',
       add: 'Add',
-      sub: 'Common subdomains (www, pay, api, ...) are added automatically; IPv4 & CIDR are also supported.',
-      sitePh: 'e.g. site.ir or 185.143.232.0/22',
+      sub: 'Common subdomains (www, pay, api, ...) are added automatically; IPv4 is also supported.',
+      sitePh: 'e.g. site.ir',
       siteInv: 'Invalid domain or IPv4 address',
       siteDup: 'Already in the list',
       nvSitesEmpty: 'No custom sites in the list.',
@@ -509,14 +491,14 @@
       whatsNewTitleModal: 'What\'s New in v{v}',
       welcomeIntro: 'Simple, free L2TP/IPsec & SSTP VPN client for Windows — built to match Banafsh on Android.',
       whatsNewHeading: 'New Features',
-      wn1: 'Dual connection services: L2TP/IPsec (faster) & SSTP (HTTPS-like) with real protocol probes',
+      wn1: 'Separate L2TP/IPsec & SSTP adapters with real protocol probes and clean Windows teardown',
       wn2: 'Country-grouped server list with crisp vector flags, live ping, and server quality badges',
-      wn3: 'Iranian websites & custom domains without VPN + encrypted QR server sharing',
-      wn4: 'Live download/upload speed meter, Dark & Light Glass themes, developer news & in-app updates',
+      wn3: 'Manual Websites Without VPN list + encrypted QR server sharing (Android compatible)',
+      wn4: 'Live download/upload speed meter, System / Light Glass / Dark themes & in-app updates',
       welcomeHow: 'How to use',
       w1: 'Pick your service (L2TP or SSTP) and click Connect or "Choose free server".',
       w2: 'In "Servers", open any country to probe and rank its servers live from your internet.',
-      w3: 'Use "No VPN" to open Iranian websites or chosen domains directly, and ⋮ to share servers via QR.',
+      w3: 'Use "No VPN" to add websites that should open directly, and ⋮ to share servers via QR.',
       w4: 'If your internet drops, Banafsh waits for connectivity and reconnects automatically.',
       bankTitle: 'Security & Logs Note',
       bankText: 'Free servers are run by volunteers on VPN Gate, not a commercial provider. Avoid logging into sensitive accounts such as banking over public volunteer servers.',
@@ -532,14 +514,19 @@
   const PENDING = -2;
   const FAILED = -1;
 
-  let appMeta = { version: '0.2.0', isPortable: false, systemDark: true, releasesPage: 'https://github.com/Banafshex/Banafsh-Windows/releases' };
+  const prefersDarkMedia = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  let appMeta = {
+    version: '0.2.1',
+    isPortable: false,
+    systemDark: prefersDarkMedia ? prefersDarkMedia.matches : true,
+    releasesPage: 'https://github.com/Banafshex/Banafsh-Windows/releases'
+  };
   let S = {
     lang: 'fa',
-    theme: 'dark',
+    theme: 'system',
     protocol: 'l2tp',
     last: null,
     profiles: {},
-    iranSitesEnabled: false,
     customSitesEnabled: true,
     sites: [...DEFAULT_SITES],
     autoReconnect: true,
@@ -855,9 +842,10 @@
       $('home-meta').hidden = true;
     }
 
-    $('home-iran-sites').checked = !!S.iranSitesEnabled;
+    const customOn = S.customSitesEnabled !== false;
+    $('home-custom-sites').checked = customOn;
     const customArr = Array.isArray(S.sites) ? S.sites : [];
-    $('home-custom-count').textContent = S.customSitesEnabled !== false
+    $('home-custom-count').textContent = customOn
       ? t('nvCustomActiveCount', { n: customArr.length })
       : t('nvCustomDisabledNote');
 
@@ -865,9 +853,7 @@
     renderBanner();
   }
 
-  // ==================== BYPASS / WITHOUT VPN (IRAN IPs + CUSTOM SITES) ====================
-
-  let iranRangesCount = 0;
+  // ==================== BYPASS / WITHOUT VPN (MANUAL CUSTOM SITES) ====================
 
   function normSiteEntry(raw) {
     let v = String(raw || '')
@@ -918,16 +904,11 @@
   }
 
   function renderBypass() {
-    $('bp-iran-sites').checked = !!S.iranSitesEnabled;
-    $('home-iran-sites').checked = !!S.iranSitesEnabled;
-    $('bp-custom-sites').checked = S.customSitesEnabled !== false;
-    $('iran-ranges-count').textContent = iranRangesCount > 0
-      ? t('nvRangesCount', { n: iranRangesCount })
-      : '';
+    const customOn = S.customSitesEnabled !== false;
+    $('bp-custom-sites').checked = customOn;
+    $('home-custom-sites').checked = customOn;
 
     const list = Array.isArray(S.sites) ? S.sites : [];
-    const customOn = S.customSitesEnabled !== false;
-
     if (!list.length) {
       $('sites').replaceChildren(el('p', { class: 'muted small center-text', text: t('nvSitesEmpty') }));
       return;
@@ -960,9 +941,9 @@
     );
   }
 
-  async function toggleIranSites(enabled) {
-    S.iranSitesEnabled = !!enabled;
-    await saveSettings({ iranSitesEnabled: S.iranSitesEnabled });
+  async function toggleCustomSites(enabled) {
+    S.customSitesEnabled = !!enabled;
+    await saveSettings({ customSitesEnabled: S.customSitesEnabled });
     renderHome();
     renderBypass();
     if (connected) {
@@ -972,21 +953,9 @@
     }
   }
 
-  $('home-iran-sites').addEventListener('change', (e) => toggleIranSites(e.target.checked));
-  $('bp-iran-sites').addEventListener('change', (e) => toggleIranSites(e.target.checked));
+  $('home-custom-sites').addEventListener('change', (e) => toggleCustomSites(e.target.checked));
+  $('bp-custom-sites').addEventListener('change', (e) => toggleCustomSites(e.target.checked));
   $('home-manage-sites').addEventListener('click', () => showTab('bypass'));
-
-  $('bp-custom-sites').addEventListener('change', async (e) => {
-    S.customSitesEnabled = e.target.checked;
-    await saveSettings({ customSitesEnabled: S.customSitesEnabled });
-    renderBypass();
-    renderHome();
-    if (connected) {
-      await syncBypassIfConnected();
-    } else {
-      toast(t('saved'));
-    }
-  });
 
   async function addCustomSite() {
     const clean = normSiteEntry($('site-in').value);
@@ -1027,22 +996,6 @@
     renderHome();
     toast(t('nvSitesResetDone'));
     await syncBypassIfConnected();
-  });
-
-  $('btn-refresh-iran').addEventListener('click', async () => {
-    $('btn-refresh-iran').disabled = true;
-    try {
-      const res = await window.api.refreshIranRanges();
-      if (res && res.count) iranRangesCount = res.count;
-      renderBypass();
-      if (res && res.ok) {
-        toast(t('nvRangesUpdated', { n: res.count }));
-      } else {
-        toast(t('nvRangesFailed'));
-      }
-    } finally {
-      $('btn-refresh-iran').disabled = false;
-    }
   });
 
   // ==================== PROTOCOL / SERVICE SWITCHING ====================
@@ -2235,8 +2188,7 @@
     if (!yes) return;
     await saveSettings({
       protocol: 'l2tp',
-      theme: 'dark',
-      iranSitesEnabled: false,
+      theme: 'system',
       customSitesEnabled: true,
       sites: [...DEFAULT_SITES],
       autoReconnect: true,
@@ -2498,13 +2450,6 @@
         }
         break;
 
-      case 'iranRangesUpdated':
-        if (ev.count) {
-          iranRangesCount = ev.count;
-          renderBypass();
-        }
-        break;
-
       case 'systemTheme':
         appMeta.systemDark = !!ev.systemDark;
         applyTheme();
@@ -2575,17 +2520,17 @@
 
   // ==================== INITIALIZE ====================
 
+  applyTheme();
+
   (async () => {
     try {
-      const [info, saved, bpInfo] = await Promise.all([
+      const [info, saved] = await Promise.all([
         window.api.appInfo().catch(() => appMeta),
-        window.api.get().catch(() => ({})),
-        window.api.bypassInfo().catch(() => ({ iranCount: 0 }))
+        window.api.get().catch(() => ({}))
       ]);
       appMeta = { ...appMeta, ...info };
       S = { ...S, ...(saved || {}) };
       if (!Array.isArray(S.sites)) S.sites = [...DEFAULT_SITES];
-      iranRangesCount = Number(bpInfo?.iranCount) || 0;
 
       applyTheme();
       applyLang();

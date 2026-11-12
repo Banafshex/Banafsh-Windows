@@ -159,17 +159,16 @@
       </button>
     </div>
 
-    <!-- Iranian Websites Without VPN Card (matching Banafsh-sstp Home card, without Apps) -->
+    <!-- Websites Without VPN Card (Manual Custom Sites Only) -->
     <div class="glass-card nv-home-card">
       <label class="nv-home-top">
         <div class="nv-home-titles">
           <div class="nv-title-line">
-            <strong data-t="nvIranTitle"></strong>
-            <span class="tag-pill nv-exp-pill" data-t="nvIranTag"></span>
+            <strong data-t="btitle"></strong>
           </div>
-          <span class="nv-home-sub" data-t="nvIranSummary"></span>
+          <span class="nv-home-sub" data-t="nvCustomToggleNote"></span>
         </div>
-        <input id="home-iran-sites" type="checkbox">
+        <input id="home-custom-sites" type="checkbox">
         <span class="switch"></span>
       </label>
       <div class="nv-home-foot">
@@ -217,32 +216,11 @@
     <div id="list" class="list"></div>
   </section>
 
-  <!-- BYPASS / WITHOUT VPN SCREEN (Iran IP Ranges + Custom Sites/IPs, NO Apps) -->
+  <!-- BYPASS / WITHOUT VPN SCREEN (Manual Custom Sites Only) -->
   <section id="s-bypass" class="screen" hidden>
     <h1 data-t="btitle"></h1>
     <p class="muted small bypass-intro" data-t="bnote"></p>
 
-    <!-- 1. All Iranian IPv4 Ranges (iran_ranges.txt) -->
-    <div class="setting-list">
-      <label class="setting">
-        <span class="setting-text">
-          <span class="nv-title-line">
-            <strong data-t="nvIranTitle"></strong>
-            <span class="tag-pill nv-exp-pill" data-t="nvIranTag"></span>
-          </span>
-          <small data-t="nvIranDetail"></small>
-        </span>
-        <input id="bp-iran-sites" type="checkbox">
-        <span class="switch"></span>
-      </label>
-      <div class="nv-range-bar">
-        <span id="iran-ranges-count" class="muted tiny"></span>
-        <button id="btn-refresh-iran" class="btn ghost small-btn" type="button" data-t="nvRefreshIran"></button>
-      </div>
-    </div>
-
-    <!-- 2. Custom Websites & IP/CIDR Addresses Without VPN -->
-    <h2 data-t="nvCustomHeading"></h2>
     <div class="setting-list">
       <label class="setting">
         <span class="setting-text">
@@ -255,7 +233,7 @@
     </div>
 
     <div class="row bypass-input-row">
-      <input id="site-in" aria-label="site" dir="ltr" placeholder="site.ir / 185.143.232.0/22">
+      <input id="site-in" aria-label="site" dir="ltr" placeholder="مثلاً site.ir">
       <button id="add-site" class="btn primary small-btn" type="button" data-t="add"></button>
     </div>
     <p class="muted tiny bypass-sub-note" data-t="sub"></p>
@@ -422,7 +400,7 @@
       <div class="about-top">
         <img src="../build/icon.png" alt="" class="about-logo">
         <div>
-          <strong id="version-label">Banafsh 0.2.0</strong>
+          <strong id="version-label">Banafsh 0.2.1</strong>
           <div class="muted small">BANAFSHX · Open Source (MIT)</div>
         </div>
       </div>

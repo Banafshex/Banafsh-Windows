@@ -1,6 +1,6 @@
 {
   "name": "banafsh",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Banafsh VPN for Windows (L2TP/IPsec & SSTP)",
   "main": "main.js",
   "author": "BANAFSHX",
@@ -24,7 +24,6 @@
       "main.js",
       "preload.js",
       "lib/**",
-      "data/**",
       "renderer/**",
       "news.json",
       "build/icon.png",

@@ -202,13 +202,10 @@ async function runTests() {
   }), 'fa');
   assert.strictEqual(expiredNews, null);
 
-  console.log('8. Testing Direct (No VPN) Iranian IP ranges & custom bypass routing...');
-  const bundledIranPath = path.join(__dirname, '..', 'data', 'iran_ranges.txt');
-  assert(fs.existsSync(bundledIranPath), 'Bundled data/iran_ranges.txt must exist');
-  const iranMerged = parseRanges(fs.readFileSync(bundledIranPath, 'utf8'));
-  assert(iranMerged.length > 1000, `Expected >1000 merged Iranian intervals, got ${iranMerged.length}`);
-  const iranCidrs = intervalsToCidrs(iranMerged);
-  assert(iranCidrs.length > 1000 && iranCidrs.length < 20000);
+  console.log('8. Testing Direct (No VPN) custom sites routing & protocol adapter separation...');
+  const { CONN_SSTP, CONN_L2TP, ALL_CONNS } = require('../lib/vpn-win');
+  assert.notStrictEqual(CONN_SSTP, CONN_L2TP, 'SSTP and L2TP must use separate Windows VPN entries');
+  assert(ALL_CONNS.includes('Banafsh'), 'Legacy Banafsh entry must be included in cleanup list');
 
   // Adjacent CIDR merge: 5.22.192.0/22 + 5.22.196.0/22 => 5.22.192.0/21
   const adj = intervalsToCidrs(parseRanges('5.22.192.0/22\n5.22.196.0/22'));
@@ -216,9 +213,6 @@ async function runTests() {
 
   // Endpoint exclusion check
   const builtCidrs = await buildBypassCidrs({
-    dataDir: __dirname,
-    bundledPath: bundledIranPath,
-    iranSitesEnabled: false,
     customSitesEnabled: true,
     sites: ['185.143.232.0/30'],
     excludeHost: '185.143.232.1'

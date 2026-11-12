@@ -15,8 +15,6 @@ contextBridge.exposeInMainWorld('api', {
   cancel: () => i.invoke('vpn:cancel'),
   status: () => i.invoke('vpn:status'),
   checkInternet: () => i.invoke('net:check'),
-  bypassInfo: () => i.invoke('bypass:info'),
-  refreshIranRanges: () => i.invoke('bypass:refresh-iran'),
   syncBypass: () => i.invoke('bypass:sync'),
 
   // QR share & receive

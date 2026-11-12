@@ -20,23 +20,20 @@ const { HOST_RE, testSstp, testL2tpIke, checkInternet } = require('./lib/probes'
 const { encodeServer, decodeServer, makeQrSvg, serializeProfileJson, parseProfileJson } = require('./lib/qr');
 const { fetchServersForProtocol, fetchServerHosts, qualityRank } = require('./lib/servers');
 const { RELEASES_PAGE, isNewer, pickNotes, fetchLatestRelease, downloadReleaseAsset, parseNews, fetchNews } = require('./lib/updater');
-const { DEFAULT_SITES, ensureIranRangesSeeded, getIranRangesCount, refreshIranRanges } = require('./lib/bypass');
+const { DEFAULT_SITES } = require('./lib/bypass');
 const { psQuote, ps, isAdmin, isConnected, clearBypassRoutes, syncBypassRoutesLive, disconnectAll, configureAndDial, createStatsSampler } = require('./lib/vpn-win');
 
-const APP_VERSION = require('./package.json').version || '0.2.0';
+const APP_VERSION = require('./package.json').version || '0.2.1';
 const IS_PORTABLE = Boolean(process.env.PORTABLE_EXECUTABLE_FILE);
 
 const DEFAULTS = {
   lang: 'fa',
-  theme: 'dark', // 'dark' | 'light' | 'system'
+  theme: 'system', // 'dark' | 'light' | 'system'
   protocol: 'l2tp', // 'l2tp' | 'sstp'
   last: null,
   profiles: {},
-  iranSitesEnabled: false,
   customSitesEnabled: true,
   sites: null,
-  iranRangesChecked: 0,
-  iranRangesAttempt: 0,
   autoReconnect: true,
   autoFailover: true,
   reconnectOnStart: false,
@@ -90,7 +87,6 @@ const dataDir = process.env.PORTABLE_EXECUTABLE_DIR || app.getPath('userData');
 const SF = path.join(dataDir, 'banafsh-settings.json');
 const LOGF = path.join(dataDir, 'banafsh.log');
 const ROUTE_STATE_FILE = path.join(dataDir, 'banafsh-active-routes.json');
-const BUNDLED_IRAN_RANGES = path.join(__dirname, 'data', 'iran_ranges.txt');
 
 const statsSampler = createStatsSampler((sample) => {
   if (lastKnownConnected && !isQuitting) {
@@ -254,8 +250,6 @@ async function connectVpn(opts = {}) {
       pass,
       psk,
       settings: s,
-      dataDir,
-      bundledIranRangesPath: BUNDLED_IRAN_RANGES,
       routeStateFile: ROUTE_STATE_FILE,
       isCancelled: () => manualDisconnect || isQuitting || myGen !== connectGeneration
     });
@@ -586,25 +580,7 @@ async function runBackgroundChecks() {
       }
     }
 
-    // 2. Weekly Iran IP ranges refresh (matching IranRanges.refreshIfDue)
-    const irRes = await refreshIranRanges({
-      dataDir,
-      bundledPath: BUNDLED_IRAN_RANGES,
-      lastChecked: s.iranRangesChecked,
-      lastAttempt: s.iranRangesAttempt,
-      force: false
-    });
-    if (!irRes.skipped) {
-      saveSettings({
-        iranRangesAttempt: irRes.attemptAt || Date.now(),
-        ...(irRes.updated ? { iranRangesChecked: irRes.checkedAt || Date.now() } : {})
-      });
-      if (irRes.updated) {
-        emitEvent('iranRangesUpdated', { count: irRes.count });
-      }
-    }
-
-    // 3. Daily update check
+    // 2. Daily update check
     const DAY = 24 * 60 * 60 * 1000;
     if (Date.now() - Number(s.updateLastCheck || 0) >= DAY) {
       const rel = await fetchLatestRelease({ isPortable: IS_PORTABLE });
@@ -815,42 +791,10 @@ ipcMain.handle('vpn:status', async () => {
   return c;
 });
 
-ipcMain.handle('bypass:info', () => ({
-  iranCount: getIranRangesCount(dataDir, BUNDLED_IRAN_RANGES),
-  lastChecked: loadSettings().iranRangesChecked || 0
-}));
-
-ipcMain.handle('bypass:refresh-iran', async () => {
-  const res = await refreshIranRanges({
-    dataDir,
-    bundledPath: BUNDLED_IRAN_RANGES,
-    force: true
-  });
-  if (res.updated) {
-    saveSettings({
-      iranRangesChecked: res.checkedAt || Date.now(),
-      iranRangesAttempt: res.attemptAt || Date.now()
-    });
-    const s = loadSettings();
-    if (s.iranSitesEnabled && lastKnownConnected) {
-      await syncBypassRoutesLive({
-        settings: s,
-        dataDir,
-        bundledIranRangesPath: BUNDLED_IRAN_RANGES,
-        routeStateFile: ROUTE_STATE_FILE,
-        currentServerHost: s.last?.host || ''
-      });
-    }
-  }
-  return { ok: !!res.updated, count: res.count || 0 };
-});
-
 ipcMain.handle('bypass:sync', async () => {
   const s = loadSettings();
   const res = await syncBypassRoutesLive({
     settings: s,
-    dataDir,
-    bundledIranRangesPath: BUNDLED_IRAN_RANGES,
     routeStateFile: ROUTE_STATE_FILE,
     currentServerHost: s.last?.host || ''
   });
@@ -1124,7 +1068,6 @@ if (!gotSingleInstanceLock) {
       }
 
       startupProgress(50, 'در حال آماده‌سازی سرویس‌های اتصال...');
-      ensureIranRangesSeeded(dataDir, BUNDLED_IRAN_RANGES);
       await hold(120);
       startMonitor();
       startupProgress(68, 'در حال خواندن تنظیمات...');
@@ -1134,7 +1077,7 @@ if (!gotSingleInstanceLock) {
       const c = await isConnected();
       lastKnownConnected = c;
       if (c) statsSampler.start();
-      else await clearBypassRoutes(ROUTE_STATE_FILE);
+      else await disconnectAll(ROUTE_STATE_FILE, { removeEntries: true });
       startupProgress(95, 'تقریباً آماده است...');
       refreshTrayMenu().catch(() => {});
 
