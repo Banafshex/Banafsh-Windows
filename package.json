@@ -1,13 +1,14 @@
 {
   "name": "banafsh",
-  "version": "0.1.13",
-  "description": "Banafsh for Windows",
+  "version": "0.2.0",
+  "description": "Banafsh VPN for Windows (L2TP/IPsec & SSTP)",
   "main": "main.js",
   "author": "BANAFSHX",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win --publish never"
+    "dist": "electron-builder --win --publish never",
+    "test": "node test/verify.js"
   },
   "devDependencies": {
     "electron": "31.7.7",
@@ -22,7 +23,10 @@
     "files": [
       "main.js",
       "preload.js",
+      "lib/**",
+      "data/**",
       "renderer/**",
+      "news.json",
       "build/icon.png",
       "!**/*.bak"
     ],
